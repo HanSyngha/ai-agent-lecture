@@ -3,87 +3,144 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chapter 5 · 툴 정의와 개별 사용 — GenAI Agent</title>
-  <link rel="stylesheet" href="./shared.css">
+  <title>Ch.05 · 툴, LLM의 손과 발 — GenAI Agent</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="./styles.css?v=7">
 </head>
-<body>
-  <canvas id="kinetic-bg" aria-hidden="true"></canvas>
-  <main class="deck" aria-live="polite">
+<body data-chapter="5">
 
-    <!-- 1: Title -->
-    <section class="slide active" data-notes="강의 전체에서 가장 중요한 챕터 중 하나. 'Agent'라는 단어가 의미 있어지려면 LLM에 진짜 손이 붙어야 합니다. 이 챕터에서 5개의 손을 하나씩 직접 만져봅니다.">
-      <div class="eyebrow">Chapter 05 · Tools</div>
-      <div class="frame split">
-        <div>
-          <h1 class="reveal gradient-title">LLM에게<br>손과 발을<br>달아준다.</h1>
-          <p class="lead reveal">DB 조회, 파일 저장, 메일 발송. LLM 혼자선 못 합니다. '툴'은 LLM이 못 하는 걸 대신 해주는 함수. 5개를 하나씩 직접 호출해봅니다.</p>
-        </div>
-        <div class="hero-mark reveal" data-mark="TOOL" aria-hidden="true">
-          <div class="orbit"></div>
-        </div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-4.html">Prev</a></span><span class="num">01</span></footer>
-    </section>
+  <div class="atelier-toolbar">
+    <a href="./index.html">← Hub</a>
+    <a href="./chapter-4.html">← 04</a>
+    <a href="./chapter-6.html">06 →</a>
+  </div>
 
-    <!-- 2: 못하는 것 -->
-    <section class="slide" data-notes="청중에게 가장 빠르게 '아 이게 왜 필요한가' 깨닫게 하는 슬라이드. LLM이 잘하는 것과 못하는 것을 한 줄로 가른다.">
-      <div class="eyebrow">왜 툴이 필요한가</div>
-      <div class="frame">
-        <h2 class="reveal">LLM이<br><span class="gradient-title">할 수 있는 것</span> vs<br>없는 것.</h2>
-        <div class="matrix two-col reveal">
-          <div class="head">✅ 스스로 가능</div><div class="head">❌ 툴이 필요</div>
-          <div class="good">이력서 요약</div><div class="bad">DB에서 이력서 가져오기</div>
-          <div class="good">평가 및 채점</div><div class="bad">RAG로 이력서 검색</div>
-          <div class="good">지원자 비교/선정</div><div class="bad">엑셀 파일에 저장</div>
-          <div class="good">보고서 작성</div><div class="bad">메일 발송</div>
-        </div>
-        <p class="lead reveal">왼쪽은 '글을 생성하고 추론하는 것'. 오른쪽은 '외부 세계와 상호작용하는 것'. 후자는 함수가 필요합니다. — 그 함수가 곧 <span class="tag">tool</span>.</p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">02</span></footer>
-    </section>
+  <div class="reveal">
+    <div class="slides">
 
-    <!-- 3: 5개 툴 -->
-    <section class="slide" data-notes="이 5개가 강의 끝까지 계속 등장. 각각이 어떤 입력을 받고 무엇을 반환하는지 머리에 박아둡니다.">
-      <div class="eyebrow">강의에서 쓰는 5개 툴</div>
-      <div class="frame">
-        <h2 class="reveal">손 5개,<br>각자 역할.</h2>
-        <div class="cards five reveal">
-          <div class="card">
-            <strong>DB</strong>
-            <p><span class="tag tool">execute_sql</span> SQL → list[dict]</p>
-          </div>
-          <div class="card">
-            <strong>RAG</strong>
-            <p><span class="tag tool">retrieve_from_rag</span> 자연어 → 유사 문서</p>
-          </div>
-          <div class="card">
-            <strong>위키</strong>
-            <p><span class="tag tool">get_confluence_page_content</span> page_id → HTML</p>
-          </div>
-          <div class="card">
-            <strong>Excel</strong>
-            <p><span class="tag tool">save_excel</span> dict → row 추가</p>
-          </div>
-          <div class="card">
-            <strong>Email</strong>
-            <p><span class="tag tool">send_email</span> HTML → 메일 발송</p>
-          </div>
+      <!-- 1: Title -->
+      <section>
+        <div class="watermark">05</div>
+        <div class="slide-content center-y">
+          <div class="chip">Chapter 05 · Tools</div>
+          <h1>
+            LLM에게<br>
+            <em>손과 발</em>을<br>
+            달아준다.
+          </h1>
+          <p class="lead" style="margin-top: 2rem;">
+            DB 조회, 파일 저장, 메일 발송. LLM 혼자선 못 한다.<br>
+            툴은 <em>그저 평범한 파이썬 함수</em>.<br>
+            다섯 개를 하나씩 직접 호출해본다.
+          </p>
         </div>
-        <p class="small reveal">전부 <span class="tag">tools.py</span> 한 파일에 정의. 각 함수는 평범한 파이썬 함수일 뿐 — LLM이 안 부른다고 해서 특별할 게 없습니다.</p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">03</span></footer>
-    </section>
+      </section>
 
-    <!-- 4: DB 툴 코드 -->
-    <section class="slide" data-notes="첫 번째 툴. sqlite3 + pandas로 간단하게. 반환을 list of dict로 한 게 포인트 — LLM에게 넘기기 좋은 형식.">
-      <div class="eyebrow">Tool 1/5 · DB 조회</div>
-      <div class="frame split">
-        <div>
-          <h2 class="reveal">SQL 한 줄로<br>조건이 명확한<br>데이터를 꺼낸다.</h2>
-          <p class="lead reveal">id, 부서명처럼 조건이 분명할 때 사용. 반환은 항상 <span class="tag">list[dict]</span> — LLM에게 넘기기 가장 쉬운 형태.</p>
+      <!-- 2: What LLM can vs can't -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">왜 툴이 필요한가</div>
+
+          <h2 style="margin-bottom: 2rem;">
+            LLM이 할 수 있는 것 vs<br>
+            <em>없는 것</em>.
+          </h2>
+
+          <div class="compare">
+            <div class="head" style="grid-column: 1 / 3;">✓ 스스로 가능</div>
+            <div class="head">— 툴이 필요</div>
+
+            <div class="yes" style="grid-column: 1 / 3;">이력서 요약</div>
+            <div class="no">DB에서 이력서 가져오기</div>
+
+            <div class="yes" style="grid-column: 1 / 3;">평가·채점</div>
+            <div class="no">RAG로 이력서 검색</div>
+
+            <div class="yes" style="grid-column: 1 / 3;">지원자 비교·선정</div>
+            <div class="no">엑셀 파일에 저장</div>
+
+            <div class="yes" style="grid-column: 1 / 3;">보고서 작성</div>
+            <div class="no">메일 발송</div>
+          </div>
+
+          <p class="lead" style="margin-top: 2rem;">
+            왼쪽은 '글을 생성하고 추론하는 일'.<br>
+            오른쪽은 '<em>외부 세계와 상호작용</em>하는 일'. 후자는 함수가 필요하다.
+          </p>
         </div>
-        <div>
-          <div class="code reveal"><span class="k">import</span> sqlite3, pandas <span class="k">as</span> pd
+      </section>
+
+      <!-- 3: 5 tools -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">강의에서 쓰는 다섯 툴</div>
+
+          <h2 style="margin-bottom: 2.4rem;">
+            손 다섯, <em>각자 역할</em>.
+          </h2>
+
+          <div class="grid-5 stagger">
+            <div class="card">
+              <h4>Tool 1</h4>
+              <h3>DB</h3>
+              <p><code>execute_sql</code></p>
+              <p>SQL → list[dict]</p>
+            </div>
+            <div class="card">
+              <h4>Tool 2</h4>
+              <h3>RAG</h3>
+              <p><code>retrieve_from_rag</code></p>
+              <p>자연어 → 유사 문서</p>
+            </div>
+            <div class="card">
+              <h4>Tool 3</h4>
+              <h3>위키</h3>
+              <p><code>get_confluence_page</code></p>
+              <p>page_id → HTML</p>
+            </div>
+            <div class="card">
+              <h4>Tool 4</h4>
+              <h3>Excel</h3>
+              <p><code>save_excel</code></p>
+              <p>dict → row 추가</p>
+            </div>
+            <div class="card">
+              <h4>Tool 5</h4>
+              <h3>Email</h3>
+              <p><code>send_email</code></p>
+              <p>HTML → 메일</p>
+            </div>
+          </div>
+
+          <p class="small" style="margin-top: 2rem;">
+            전부 <code>tools.py</code> 한 파일에 정의. 각 함수는 그냥 파이썬 함수일 뿐 — LLM이 안 부른다고 해서 특별할 것이 없다.
+          </p>
+        </div>
+      </section>
+
+      <!-- 4: DB tool -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Tool 1/5 · DB</div>
+
+          <div class="grid-2-wide">
+            <div>
+              <h2>
+                SQL 한 줄로<br>
+                조건이 명확한<br>
+                데이터를 <em>꺼낸다</em>.
+              </h2>
+              <p class="lead" style="margin-top: 1.4rem;">
+                id, 부서명처럼 조건이 분명할 때.<br>
+                반환은 항상 <code>list[dict]</code> — LLM에게 넘기기 가장 쉬운 모양.
+              </p>
+            </div>
+
+<pre class="code" data-lang="python"><span class="k">import</span> sqlite3, pandas <span class="k">as</span> pd
 
 <span class="k">def</span> <span class="fn">execute_sql</span>(sql_query, db_path=DB_PATH):
     <span class="k">with</span> sqlite3.<span class="fn">connect</span>(db_path) <span class="k">as</span> conn:
@@ -91,31 +148,49 @@
         <span class="k">return</span> data.<span class="fn">to_dict</span>(orient=<span class="s">"records"</span>)
 
 <span class="c"># 호출 예</span>
-<span class="fn">execute_sql</span>(<span class="s">"SELECT * FROM job_posting;"</span>)</div>
-        </div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">04</span></footer>
-    </section>
-
-    <!-- 5: RAG 툴 -->
-    <section class="slide" data-notes="DB와 RAG의 차이가 핵심. DB는 키로 정확히 가져오는 거고 RAG는 의미로 비슷한 걸 찾는 것. 청중이 이 차이를 헷갈리면 후반 챕터의 다중 툴 선택이 안 잡힙니다.">
-      <div class="eyebrow">Tool 2/5 · RAG 검색</div>
-      <div class="frame">
-        <h2 class="reveal">조건이 모호할 땐<br><span class="gradient-title">의미</span>로 찾는다.</h2>
-        <div class="diagram reveal" style="margin-bottom:18px;">
-          <div class="flow">
-            <div class="flow-row evenly">
-              <div class="node user">"머신러닝 경험자"</div>
-              <div class="arrow">→</div>
-              <div class="node tool">Embedding API<br><small>텍스트 → 벡터</small></div>
-              <div class="arrow">→</div>
-              <div class="node data">Chroma DB<br><small>유사 벡터 검색</small></div>
-              <div class="arrow">→</div>
-              <div class="node">상위 5개 청크<br><small>resume_id + 텍스트</small></div>
-            </div>
+<span class="fn">execute_sql</span>(<span class="s">"SELECT * FROM job_posting;"</span>)</pre>
           </div>
         </div>
-        <div class="code reveal"><span class="k">def</span> <span class="fn">retrieve_from_rag</span>(query, n_results=<span class="n">5</span>, collection_name=<span class="s">"resume"</span>):
+      </section>
+
+      <!-- 5: RAG tool -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Tool 2/5 · RAG</div>
+
+          <h2 style="margin-bottom: 2rem;">
+            조건이 모호할 땐<br>
+            <em>의미</em>로 찾는다.
+          </h2>
+
+          <div class="diagram" style="margin-bottom: 1.6rem;">
+            <svg viewBox="0 0 900 130" xmlns="http://www.w3.org/2000/svg">
+              <g class="fade-in">
+                <rect class="node-bg user" x="20"  y="35" rx="10" width="160" height="60"/>
+                <rect class="node-bg tool" x="240" y="35" rx="10" width="200" height="60"/>
+                <rect class="node-bg data" x="500" y="35" rx="10" width="180" height="60"/>
+                <rect class="node-bg llm"  x="740" y="35" rx="10" width="140" height="60"/>
+              </g>
+              <g class="fade-in">
+                <text x="100" y="62" text-anchor="middle">"머신러닝 경험자"</text>
+                <text x="100" y="80" text-anchor="middle" class="label">natural query</text>
+                <text x="340" y="62" text-anchor="middle">Embedding API</text>
+                <text x="340" y="80" text-anchor="middle" class="label">text → vector</text>
+                <text x="590" y="62" text-anchor="middle">Chroma DB</text>
+                <text x="590" y="80" text-anchor="middle" class="label">vector search</text>
+                <text x="810" y="62" text-anchor="middle">top-5 청크</text>
+                <text x="810" y="80" text-anchor="middle" class="label">resume_id</text>
+              </g>
+              <g class="draw">
+                <path class="edge" d="M180 65 L240 65"/>
+                <path class="edge" d="M440 65 L500 65"/>
+                <path class="edge accent" d="M680 65 L740 65"/>
+              </g>
+            </svg>
+          </div>
+
+<pre class="code" data-lang="python"><span class="k">def</span> <span class="fn">retrieve_from_rag</span>(query, n_results=<span class="n">5</span>, collection_name=<span class="s">"resume"</span>):
     query_embedding = <span class="fn">embed</span>(query)              <span class="c"># 텍스트 → 벡터</span>
     results = collection.<span class="fn">query</span>(
         query_embeddings=[query_embedding],
@@ -123,50 +198,63 @@
         include=[<span class="s">"documents"</span>, <span class="s">"metadatas"</span>],
     )
     <span class="k">return</span> [{<span class="s">"resume_id"</span>: m[<span class="s">"doc_id"</span>], <span class="s">"title"</span>: m[<span class="s">"title"</span>], <span class="s">"content"</span>: d}
-            <span class="k">for</span> d, m <span class="k">in</span> <span class="fn">zip</span>(results[<span class="s">"documents"</span>][<span class="n">0</span>], results[<span class="s">"metadatas"</span>][<span class="n">0</span>])]</div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">05</span></footer>
-    </section>
+            <span class="k">for</span> d, m <span class="k">in</span> <span class="fn">zip</span>(results[<span class="s">"documents"</span>][<span class="n">0</span>], results[<span class="s">"metadatas"</span>][<span class="n">0</span>])]</pre>
+        </div>
+      </section>
 
-    <!-- 6: Wiki 툴 -->
-    <section class="slide" data-notes="Confluence API 단순 GET. page_id로 본문 HTML 받아오기. 사내 위키에서 평가 기준표 가져오는 용도.">
-      <div class="eyebrow">Tool 3/5 · 위키 조회</div>
-      <div class="frame">
-        <h2 class="reveal">사내 위키 페이지를<br><span class="gradient-title">page_id</span>로 꺼낸다.</h2>
-        <div class="code reveal"><span class="k">def</span> <span class="fn">get_confluence_page_content</span>(page_id):
-    url = <span class="s">f"{WIKI_BASE}/rest/api/content/{page_id}"</span>
+      <!-- 6: Wiki tool -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Tool 3/5 · 위키</div>
+
+          <h2>
+            사내 위키 페이지를<br>
+            <em>page_id</em>로 꺼낸다.
+          </h2>
+
+<pre class="code" data-lang="python" style="margin-top: 2rem;"><span class="k">def</span> <span class="fn">get_confluence_page_content</span>(page_id):
+    url    = <span class="s">f"{WIKI_BASE}/rest/api/content/{page_id}"</span>
     params = {<span class="s">"expand"</span>: <span class="s">"body.view"</span>}
-    auth   = (os.getenv(<span class="s">"user_id"</span>), os.getenv(<span class="s">"user_pw"</span>))
+    auth   = (os.<span class="fn">getenv</span>(<span class="s">"user_id"</span>), os.<span class="fn">getenv</span>(<span class="s">"user_pw"</span>))
 
     response = requests.<span class="fn">get</span>(url, params=params, auth=auth, verify=<span class="n">False</span>)
-    body = response.<span class="fn">json</span>()[<span class="s">"body"</span>][<span class="s">"view"</span>][<span class="s">"value"</span>]
-    <span class="k">return</span> {<span class="s">"content"</span>: body}</div>
-        <p class="small reveal">반환은 HTML 그대로. LLM이 마크업을 직접 파싱하는 게 가능하므로 별도 텍스트 변환 안 해도 됩니다. 평가 기준표같이 표 구조가 있는 페이지에 특히 유용.</p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">06</span></footer>
-    </section>
+    body     = response.<span class="fn">json</span>()[<span class="s">"body"</span>][<span class="s">"view"</span>][<span class="s">"value"</span>]
+    <span class="k">return</span> {<span class="s">"content"</span>: body}</pre>
 
-    <!-- 7: Excel + Email -->
-    <section class="slide" data-notes="저장과 발송. dict/HTML 입력만 받으면 됨. 평가 결과 → 엑셀 누적, 보고서 → 메일 발송 같은 마지막 단계 액션.">
-      <div class="eyebrow">Tool 4·5/5 · Excel & Email</div>
-      <div class="frame">
-        <h2 class="reveal">마지막은 <span class="gradient-title">저장</span>과 <span class="gradient-title">발송</span>.</h2>
-        <div class="cards two reveal">
-          <div class="card">
-            <strong>save_excel(data)</strong>
-            <div class="code bare" style="margin-top:12px;font-size:0.78em;"><span class="k">def</span> <span class="fn">save_excel</span>(data, path=EXCEL_PATH):
+          <p class="small" style="margin-top: 1.2rem;">
+            반환은 HTML 그대로. LLM이 마크업을 직접 파싱하므로 텍스트 변환 불필요.<br>
+            평가 기준표처럼 표 구조가 있는 페이지에 특히 유용.
+          </p>
+        </div>
+      </section>
+
+      <!-- 7: Excel + Email -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Tool 4·5/5 · Excel & Email</div>
+
+          <h2 style="margin-bottom: 2.2rem;">
+            마지막은<br>
+            <em>저장</em>과 <em>발송</em>.
+          </h2>
+
+          <div class="grid-2-tight stagger">
+            <div class="card">
+              <h4>Tool 4 · 누적 저장</h4>
+              <h3>save_excel(data)</h3>
+<pre class="code" data-lang="python" style="margin-top: 0.6rem; font-size: 0.82rem;"><span class="k">def</span> <span class="fn">save_excel</span>(data, path=EXCEL_PATH):
     df_new = pd.<span class="fn">DataFrame</span>([data])
     df_new[<span class="s">"저장일시"</span>] = <span class="fn">now</span>()
-
     <span class="k">if</span> os.path.<span class="fn">exists</span>(path):
-        <span class="c"># 기존 시트 읽고 concat</span>
-        df = pd.<span class="fn">concat</span>([read(), df_new])
-    df.<span class="fn">to_excel</span>(path)</div>
-          </div>
-          <div class="card">
-            <strong>send_email(content)</strong>
-            <div class="code bare" style="margin-top:12px;font-size:0.78em;"><span class="k">def</span> <span class="fn">send_email</span>(content):
-    <span class="c"># SSO 인증 후 본인 메일로</span>
+        df = pd.<span class="fn">concat</span>([<span class="fn">read</span>(), df_new])
+    df.<span class="fn">to_excel</span>(path)</pre>
+            </div>
+            <div class="card">
+              <h4>Tool 5 · SSO 메일</h4>
+              <h3>send_email(content)</h3>
+<pre class="code" data-lang="python" style="margin-top: 0.6rem; font-size: 0.82rem;"><span class="k">def</span> <span class="fn">send_email</span>(content):
     res = requests.<span class="fn">post</span>(
         <span class="s">f"{MAIL_API}/auth/mail/prepare"</span>,
         json={<span class="s">"content"</span>: content},
@@ -174,84 +262,123 @@
     request_id = res.<span class="fn">json</span>()[<span class="s">"request_id"</span>]
     webbrowser.<span class="fn">open</span>(
         <span class="s">f"{LOGIN_URL}?request_id={request_id}"</span>
-    )</div>
-          </div>
-        </div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">07</span></footer>
-    </section>
-
-    <!-- 8: LLM + Tool 연결 다이어그램 -->
-    <section class="slide" data-notes="이게 챕터의 클라이맥스. LLM과 툴을 어떻게 엮는가. 'LLM이 SQL을 생성하고 우리가 그걸 실행하고 다시 LLM에게 결과를 해석시킨다'.">
-      <div class="eyebrow">LLM + Tool</div>
-      <div class="frame">
-        <h2 class="reveal">LLM → 툴 → LLM.<br><span class="gradient-title">샌드위치</span> 패턴.</h2>
-        <div class="diagram reveal">
-          <div class="flow">
-            <div class="flow-row evenly">
-              <div class="node user">사용자<br><small>"이력서 몇 건?"</small></div>
-              <div class="arrow">→</div>
-              <div class="node llm">LLM #1<br><small>SQL 생성</small></div>
-              <div class="arrow">→</div>
-              <div class="node tool">execute_sql<br><small>실제 조회</small></div>
-              <div class="arrow">→</div>
-              <div class="node llm">LLM #2<br><small>결과 해석</small></div>
-              <div class="arrow">→</div>
-              <div class="node user">"총 12건입니다"</div>
+    )</pre>
             </div>
           </div>
         </div>
-        <p class="lead reveal">LLM은 SQL을 생성할 줄 알지만 직접 DB에 못 갑니다. 우리는 그 SQL을 실행해서 결과를 다시 LLM에게 넘겨 한국어로 풀어달라고 합니다. — Chapter 7부터는 이 연결을 LLM이 스스로 하게 됩니다.</p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">08</span></footer>
-    </section>
+      </section>
 
-    <!-- 9: 실제 연결 코드 -->
-    <section class="slide" data-notes="실제 연결 코드. system_prompt를 두 개 쓰는 게 포인트 — '쿼리 생성용'과 '결과 해석용'은 LLM에게 요구하는 출력 형태가 다릅니다.">
-      <div class="eyebrow">Code · 샌드위치를 코드로</div>
-      <div class="frame">
-        <h2 class="reveal">시스템 프롬프트 <span class="gradient-title">2개</span>,<br>호출 <span class="gradient-title">2번</span>.</h2>
-        <div class="code reveal"><span class="c"># 1단계: SQL 생성</span>
+      <!-- 8: Sandwich diagram -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">LLM + Tool</div>
+
+          <h2 style="margin-bottom: 2rem;">
+            LLM → 툴 → LLM.<br>
+            <em>샌드위치</em> 패턴.
+          </h2>
+
+          <div class="diagram">
+            <svg viewBox="0 0 900 140" xmlns="http://www.w3.org/2000/svg">
+              <g class="fade-in">
+                <rect class="node-bg user" x="10"  y="40" rx="10" width="160" height="60"/>
+                <rect class="node-bg llm"  x="200" y="40" rx="10" width="160" height="60"/>
+                <rect class="node-bg tool" x="390" y="40" rx="10" width="170" height="60"/>
+                <rect class="node-bg llm"  x="590" y="40" rx="10" width="160" height="60"/>
+                <rect class="node-bg user" x="780" y="40" rx="10" width="110" height="60"/>
+              </g>
+              <g class="fade-in">
+                <text x="90"  y="65" text-anchor="middle">사용자</text>
+                <text x="90"  y="85" text-anchor="middle" class="label">"이력서 몇 건?"</text>
+                <text x="280" y="65" text-anchor="middle">LLM #1</text>
+                <text x="280" y="85" text-anchor="middle" class="label">SQL 생성</text>
+                <text x="475" y="65" text-anchor="middle">execute_sql</text>
+                <text x="475" y="85" text-anchor="middle" class="label">실제 조회</text>
+                <text x="670" y="65" text-anchor="middle">LLM #2</text>
+                <text x="670" y="85" text-anchor="middle" class="label">결과 해석</text>
+                <text x="835" y="65" text-anchor="middle" class="serif">"12건"</text>
+              </g>
+              <g class="draw">
+                <path class="edge" d="M170 70 L200 70"/>
+                <path class="edge accent" d="M360 70 L390 70"/>
+                <path class="edge" d="M560 70 L590 70"/>
+                <path class="edge" d="M750 70 L780 70"/>
+              </g>
+            </svg>
+          </div>
+
+          <p class="lead" style="margin-top: 1.6rem;">
+            LLM은 SQL을 생성할 줄 알지만 직접 DB에 못 간다.<br>
+            우리는 그 SQL을 실행해서 결과를 다시 LLM에게 넘긴다.<br>
+            — Chapter 7부터는 이 연결을 <em>LLM이 스스로</em> 하게 된다.
+          </p>
+        </div>
+      </section>
+
+      <!-- 9: Sandwich code -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Code · 샌드위치를 코드로</div>
+
+          <h2>
+            시스템 프롬프트 <em>2개</em>,<br>
+            호출 <em>2번</em>.
+          </h2>
+
+<pre class="code" data-lang="python" style="margin-top: 1.8rem;"><span class="c"># 1단계: SQL 생성</span>
 sql = <span class="fn">generate_response</span>(
     system_prompt=sql_generator_system_prompt,   <span class="c"># "SELECT만 생성"</span>
     user_prompt=<span class="s">f"{user_question}\n[테이블 정보]{table_info}"</span>,
 )
 
 <span class="c"># 2단계: 툴 실행</span>
-result = <span class="hl"><span class="fn">execute_sql</span>(sql)</span>
+result = <span class="em"><span class="fn">execute_sql</span>(sql)</span>
 
 <span class="c"># 3단계: 결과 해석</span>
 answer = <span class="fn">generate_response</span>(
     system_prompt=sqlite_result_system_prompt,   <span class="c"># "한국어로 요약"</span>
     user_prompt=<span class="s">f"{user_question}\n[조회 결과]{result}"</span>,
-)</div>
-        <p class="small reveal">코드만 보면 단순한 함수 3번 호출. 하지만 이 패턴이 <span class="tag">tool augmentation</span>의 본질. Chapter 7부터는 '어떤 툴을 호출할지'까지 LLM이 결정하게 만들 겁니다.</p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">09</span></footer>
-    </section>
+)</pre>
 
-    <!-- 10: Wrap -->
-    <section class="slide" data-notes="이 챕터의 한계: 어떤 툴을 언제 부를지를 우리가 코드로 정해야 함. 다음 챕터에서 여러 툴을 직렬로 묶은 워크플로우.">
-      <div class="eyebrow">Chapter 5 · 마무리</div>
-      <div class="frame">
-        <h2 class="reveal">툴이 LLM과<br><span class="gradient-title">잘 붙는 게</span><br>Agent의 시작.</h2>
-        <div class="callout reveal no-bang">개별 툴이 LLM과 깔끔하게 붙기만 하면 그 다음은 '몇 개를 어떤 순서로 엮느냐'. Chapter 6에서 툴 4개를 직렬로 엮은 워크플로우를 만들어봅니다.</div>
-        <p class="reveal" style="margin-top:32px;">
-          <a class="chapter-card" style="display:inline-block;max-width:380px;" href="./chapter-6.html">
-            <span class="num">CH 06 →</span>
-            <span class="ttl">고정 워크플로우</span>
-            <span class="desc">툴 → 툴 → 툴. 코드로 순서를 박아둔 첫 번째 End-to-End.</span>
+          <p class="small" style="margin-top: 1.2rem;">
+            세 줄짜리 함수 호출. 하지만 이 패턴이 곧 <em>tool augmentation</em> 의 본질.
+          </p>
+        </div>
+      </section>
+
+      <!-- 10: Next -->
+      <section>
+        <div class="watermark">→</div>
+        <div class="slide-content center-y">
+          <div class="chip">Chapter 05 · 마무리</div>
+          <h2>
+            툴이 LLM과<br>
+            <em>잘 붙는 게</em><br>
+            Agent의 시작.
+          </h2>
+          <p class="lead">
+            개별 툴이 깔끔히 붙으면<br>
+            그 다음은 '몇 개를 어떤 순서로 엮느냐'.
+          </p>
+
+          <a class="next-strip" href="./chapter-6.html" style="margin-top: 3rem; max-width: 600px;">
+            <div>
+              <div class="meta">Next · Chapter 06</div>
+              <div class="title">고정 <em>워크플로우</em></div>
+            </div>
+            <div class="arrow">→</div>
           </a>
-        </p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-6.html">Next →</a></span><span class="num">10</span></footer>
-    </section>
+        </div>
+      </section>
 
-  </main>
+    </div>
+  </div>
 
-  <div class="progress"><span></span></div>
-  <div class="hint">← → 또는 Space · N: 노트 · P: 인쇄</div>
-  <div class="notes" aria-live="polite"></div>
-  <script src="./shared.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({ hash: true, controls: true, progress: true, center: false, transition: 'fade', slideNumber: 'c/t', width: 1440, height: 900, margin: 0.04 });
+  </script>
 </body>
 </html>

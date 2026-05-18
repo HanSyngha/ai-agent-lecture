@@ -3,197 +3,254 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chapter 1 · 환경 셋업 — GenAI Agent</title>
-  <link rel="stylesheet" href="./shared.css">
+  <title>Ch.01 · 환경 셋업 — GenAI Agent</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="./styles.css?v=7">
 </head>
-<body>
-  <canvas id="kinetic-bg" aria-hidden="true"></canvas>
-  <main class="deck" aria-live="polite">
+<body data-chapter="1">
 
-    <!-- 1: Title -->
-    <section class="slide active" data-notes="강의의 첫 챕터. 환경 세팅이 지루해 보이지만 'LLM을 호출할 수 있는 상태'를 만드는 출발점입니다. 패키지 하나하나가 다음 챕터에서 쓰일 예정.">
-      <div class="eyebrow">Chapter 01 · 환경 셋업</div>
-      <div class="frame split">
-        <div>
-          <h1 class="reveal gradient-title">실습을<br>돌리려면<br>일단 깔자.</h1>
-          <p class="lead reveal">파이썬 패키지는 이미 만들어진 기능을 가져와서, 우리 코드를 빠르게 만들기 위한 도구. 오늘 강의 전체에서 쓸 6개 영역을 한 번에 설치합니다.</p>
-        </div>
-        <div class="hero-mark reveal" data-mark="01" aria-hidden="true">
-          <div class="orbit"></div>
-        </div>
-      </div>
-      <footer>
-        <span><a href="./index.html">← Hub</a></span>
-        <span class="num">01</span>
-      </footer>
-    </section>
+  <div class="atelier-toolbar">
+    <a href="./index.html">← Hub</a>
+    <a href="./chapter-2.html">Next 02 →</a>
+  </div>
 
-    <!-- 2: 왜 패키지? -->
-    <section class="slide" data-notes="패키지의 본질을 설명. '이미 누가 만들어놓은 함수를 import해서 쓴다'라는 개념을 도구 비유로 보여줍니다. Agent 강의 전체의 '툴'이라는 개념과 자연스럽게 이어집니다.">
-      <div class="eyebrow">Why pip install?</div>
-      <div class="frame">
-        <h2 class="reveal">남이 만든 코드를<br><span class="gradient-title">한 줄</span>로 가져온다.</h2>
-        <div class="diagram reveal">
-          <div class="flow">
-            <div class="flow-row evenly">
-              <div class="node">내 코드<br><small>몇 줄</small></div>
-              <div class="arrow">+</div>
-              <div class="node tool">openai<br><small>API 호출</small></div>
-              <div class="arrow">+</div>
-              <div class="node tool">streamlit<br><small>웹 UI</small></div>
-              <div class="arrow">+</div>
-              <div class="node tool">chromadb<br><small>벡터 DB</small></div>
-              <div class="arrow">=</div>
-              <div class="node llm">동작하는 앱</div>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- =============================================================
+           SLIDE 1 · TITLE
+           ============================================================= -->
+      <section>
+        <div class="watermark">01</div>
+        <div class="slide-content center-y">
+          <div class="chip">Chapter 01 · 환경 셋업</div>
+
+          <h1>
+            실습을 돌리려면,<br>
+            <em>일단 깔자</em>.
+          </h1>
+
+          <p class="lead" style="margin-top: 2rem;">
+            파이썬 패키지는 이미 만들어진 기능을 가져오는 일.<br>
+            오늘 강의 전체에서 쓸 여섯 영역을 한 번에 설치합니다.
+          </p>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SLIDE 2 · WHY pip install — DIAGRAM
+           ============================================================= -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Why pip install?</div>
+
+          <h2>
+            남이 만든 코드를,<br>
+            <em>한 줄</em>로 가져온다.
+          </h2>
+
+          <p class="lead" style="margin-top: 1.4rem;">
+            내 코드는 짧아도 된다. 이미 만들어진 것을 어떻게 엮을지가 전부.<br>
+            — 이 사고방식이 오늘 강의 전체의 '툴'과 정확히 같다.
+          </p>
+
+          <div class="diagram" style="margin-top: 2.6rem;">
+            <svg viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg">
+              <!-- nodes -->
+              <g class="fade-in">
+                <rect class="node-bg user"  x="20"  y="70"  rx="10" width="130" height="60"/>
+                <rect class="node-bg tool"  x="200" y="70"  rx="10" width="130" height="60"/>
+                <rect class="node-bg tool"  x="380" y="70"  rx="10" width="130" height="60"/>
+                <rect class="node-bg tool"  x="560" y="70"  rx="10" width="130" height="60"/>
+                <rect class="node-bg llm"   x="740" y="70"  rx="10" width="140" height="60"/>
+              </g>
+              <!-- text -->
+              <g class="fade-in">
+                <text x="85"  y="98"  text-anchor="middle">내 코드</text>
+                <text x="85"  y="118" text-anchor="middle" class="label">few lines</text>
+                <text x="265" y="98"  text-anchor="middle">openai</text>
+                <text x="265" y="118" text-anchor="middle" class="label">api</text>
+                <text x="445" y="98"  text-anchor="middle">streamlit</text>
+                <text x="445" y="118" text-anchor="middle" class="label">web ui</text>
+                <text x="625" y="98"  text-anchor="middle">chromadb</text>
+                <text x="625" y="118" text-anchor="middle" class="label">vector db</text>
+                <text x="810" y="98"  text-anchor="middle" class="serif">동작하는 앱</text>
+              </g>
+              <!-- connectors -->
+              <g class="draw">
+                <path class="edge" d="M150 100 L200 100"/>
+                <path class="edge" d="M330 100 L380 100"/>
+                <path class="edge" d="M510 100 L560 100"/>
+                <path class="edge accent" d="M690 100 L740 100"/>
+              </g>
+              <!-- plus & equal markers -->
+              <g class="fade-in">
+                <text x="175" y="105" text-anchor="middle" class="label">+</text>
+                <text x="355" y="105" text-anchor="middle" class="label">+</text>
+                <text x="535" y="105" text-anchor="middle" class="label">+</text>
+                <text x="715" y="105" text-anchor="middle" class="label">=</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="marginalia">패키지 = 외부 함수 차용</div>
+      </section>
+
+      <!-- =============================================================
+           SLIDE 3 · THE COMMAND
+           ============================================================= -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">All-in-one</div>
+
+          <h2>
+            이 <em>한 줄</em>로,<br>
+            오늘 쓸 것 전부.
+          </h2>
+
+          <pre class="code" data-lang="bash"><span class="c"># Jupyter cell</span>
+pip install openai streamlit streamlit_ace openpyxl \
+            chromadb pysqlite3-binary python-dotenv \
+            ipython ipywidgets <span class="em">--no-cache-dir</span></pre>
+
+          <p class="small" style="margin-top: 1.2rem;">
+            <code>--no-cache-dir</code> 는 캐시 폴더 권한이 막힌 환경에서도 안전.<br>
+            일부가 실패하면 영역별로 쪼개서 재시도하면 됩니다.
+          </p>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SLIDE 4 · WHAT EACH PACKAGE DOES
+           ============================================================= -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">여섯 영역의 역할</div>
+
+          <h2 style="margin-bottom: 2.4rem;">
+            <em>여섯 영역</em>이 모이면<br>
+            오늘 강의의 골격.
+          </h2>
+
+          <div class="grid-3 stagger">
+            <div class="card">
+              <h4>LLM</h4>
+              <h3>openai</h3>
+              <p>모든 LLM 호출의 클라이언트. Chapter 3부터 강의 끝까지 매 슬라이드에 등장.</p>
+            </div>
+            <div class="card">
+              <h4>Web UI</h4>
+              <h3>streamlit</h3>
+              <p>브라우저에서 챗봇·에이전트를 즉시 띄우기 위한 도구. <code>streamlit_ace</code> 동봉.</p>
+            </div>
+            <div class="card">
+              <h4>Excel</h4>
+              <h3>openpyxl</h3>
+              <p>평가 결과를 누적 저장하는 툴이 내부에서 사용. 컬럼은 dict 키 그대로.</p>
+            </div>
+            <div class="card">
+              <h4>RAG</h4>
+              <h3>chromadb</h3>
+              <p>벡터 DB로 이력서를 의미 기반 검색. <code>pysqlite3-binary</code>는 호환성용.</p>
+            </div>
+            <div class="card">
+              <h4>Env</h4>
+              <h3>python-dotenv</h3>
+              <p>.env 파일 읽기·쓰기. 다음 챕터의 주인공.</p>
+            </div>
+            <div class="card">
+              <h4>Jupyter</h4>
+              <h3>ipywidgets</h3>
+              <p>패스워드 입력 위젯 같은 셀 내부 UI. <code>ipython</code> 동봉.</p>
             </div>
           </div>
         </div>
-        <p class="lead reveal">"내가 처음부터 짜야 할 코드"는 0%. "이미 만들어진 걸 어떻게 엮을지" 가 100%. 이 사고방식이 오늘 강의 전반의 '툴'과 정확히 같은 형태입니다.</p>
-      </div>
-      <footer>
-        <span><a href="./index.html">← Hub</a></span>
-        <span class="num">02</span>
-      </footer>
-    </section>
+      </section>
 
-    <!-- 3: 한 줄 install -->
-    <section class="slide" data-notes="실제 명령어를 보여줍니다. --no-cache-dir 옵션은 사내 환경에서 캐시 권한 이슈를 피하기 위해 자주 씁니다.">
-      <div class="eyebrow">All-in-one install</div>
-      <div class="frame">
-        <h2 class="reveal">이 한 줄로<br>오늘 쓸 거 다 깔립니다.</h2>
-        <div class="code reveal"><span class="c"># Jupyter cell에서 실행</span>
-pip install openai streamlit streamlit_ace openpyxl \
-  chromadb pysqlite3-binary python-dotenv \
-  ipython ipywidgets <span class="hl">--no-cache-dir</span></div>
-        <p class="small reveal"><span class="tag">--no-cache-dir</span> 캐시 폴더 권한이 막혀 있는 환경에서도 안전. 설치 중 일부 패키지가 실패하면 영역별로 쪼개서 다시 시도하면 됩니다.</p>
-      </div>
-      <footer>
-        <span><a href="./index.html">← Hub</a></span>
-        <span class="num">03</span>
-      </footer>
-    </section>
+      <!-- =============================================================
+           SLIDE 5 · 8080 PORT
+           ============================================================= -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Free port 8080</div>
 
-    <!-- 4: 패키지별 역할 -->
-    <section class="slide" data-notes="각 패키지가 강의 어느 챕터에서 활약할지 미리 보여줍니다. 청중이 '왜 이걸 깔지?'라는 질문을 안고 가지 않게.">
-      <div class="eyebrow">What each package does</div>
-      <div class="frame">
-        <h2 class="reveal">6개 영역, <span class="gradient-title">9개 패키지</span>.</h2>
-        <div class="cards reveal">
-          <div class="card">
-            <strong>LLM</strong>
-            <p><span class="tag">openai</span> LLM API 클라이언트. Chapter 3부터 끝까지 사용.</p>
-          </div>
-          <div class="card">
-            <strong>웹 UI</strong>
-            <p><span class="tag">streamlit</span> <span class="tag">streamlit_ace</span> 브라우저로 챗봇/에이전트 데모.</p>
-          </div>
-          <div class="card">
-            <strong>엑셀</strong>
-            <p><span class="tag">openpyxl</span> 평가 결과 저장 툴이 내부적으로 사용.</p>
+          <div class="grid-2-wide">
+            <div>
+              <h2>
+                웹앱은<br>
+                <em>한 포트</em>만<br>
+                쓸 수 있다.
+              </h2>
+              <p class="lead" style="margin-top: 1.4rem;">
+                Streamlit은 8080으로만 뜬다.<br>
+                이전 셀이 살아 있으면 새 셀은 못 뜬다.
+              </p>
+            </div>
+
+            <div class="stack">
+              <pre class="code" data-lang="python"><span class="k">from</span> utils.helper <span class="k">import</span> terminate_process
+
+<span class="fn">terminate_process</span>()
+<span class="c"># 8080 점유 프로세스를 종료</span></pre>
+
+              <div class="callout">
+                <strong>terminate_process()</strong>는 실습 utils에 미리 포함된 헬퍼. 포트 충돌이 의심되면 가장 먼저 호출.
+              </div>
+            </div>
           </div>
         </div>
-        <div class="cards reveal">
-          <div class="card">
-            <strong>RAG</strong>
-            <p><span class="tag">chromadb</span> <span class="tag">pysqlite3-binary</span> 벡터 DB와 sqlite 호환.</p>
-          </div>
-          <div class="card">
-            <strong>환경변수</strong>
-            <p><span class="tag">python-dotenv</span> .env 읽기/쓰기. Chapter 2의 주인공.</p>
-          </div>
-          <div class="card">
-            <strong>Jupyter UI</strong>
-            <p><span class="tag">ipython</span> <span class="tag">ipywidgets</span> 패스워드 입력 위젯 등.</p>
-          </div>
-        </div>
-      </div>
-      <footer>
-        <span><a href="./index.html">← Hub</a></span>
-        <span class="num">04</span>
-      </footer>
-    </section>
+      </section>
 
-    <!-- 5: 충돌 시 폴백 -->
-    <section class="slide" data-notes="실제 강의에서 가장 자주 막히는 지점. 사내 망에서 의존성이 어긋날 때 영역별로 --force-reinstall로 재시도하는 패턴.">
-      <div class="eyebrow">If something fails</div>
-      <div class="frame">
-        <h2 class="reveal">영역별 폴백 설치.</h2>
-        <div class="cards two reveal">
-          <div class="card">
-            <strong>LLM 영역</strong>
-            <div class="code bare" style="margin-top:14px;font-size:0.78em;">pip install openai \
-  <span class="hl">--force-reinstall</span> --no-cache-dir</div>
-          </div>
-          <div class="card">
-            <strong>웹 UI 영역</strong>
-            <div class="code bare" style="margin-top:14px;font-size:0.78em;">pip install streamlit streamlit_ace \
-  <span class="hl">--force-reinstall</span> --no-cache-dir</div>
-          </div>
-          <div class="card">
-            <strong>RAG 영역</strong>
-            <div class="code bare" style="margin-top:14px;font-size:0.78em;">pip install chromadb pysqlite3-binary \
-  <span class="hl">--force-reinstall</span> --no-cache-dir</div>
-          </div>
-          <div class="card">
-            <strong>환경변수 영역</strong>
-            <div class="code bare" style="margin-top:14px;font-size:0.78em;">pip install python-dotenv \
-  <span class="hl">--force-reinstall</span> --no-cache-dir</div>
-          </div>
-        </div>
-        <p class="small reveal"><span class="tag">--force-reinstall</span> 이미 설치된 버전을 무시하고 재설치. 의존성 충돌이 의심될 때.</p>
-      </div>
-      <footer>
-        <span><a href="./index.html">← Hub</a></span>
-        <span class="num">05</span>
-      </footer>
-    </section>
+      <!-- =============================================================
+           SLIDE 6 · WRAP & NEXT
+           ============================================================= -->
+      <section>
+        <div class="watermark">→</div>
+        <div class="slide-content center-y">
+          <div class="chip">Chapter 01 · 마무리</div>
 
-    <!-- 6: 8080 포트 -->
-    <section class="slide" data-notes="실습 환경에서 가장 자주 막히는 두번째 지점. 8080 포트 충돌. terminate_process()는 강의용 utils에 들어있는 헬퍼.">
-      <div class="eyebrow">Free port 8080</div>
-      <div class="frame split">
-        <div>
-          <h2 class="reveal">웹앱은<br><span class="gradient-title">한 포트</span>만<br>쓸 수 있다.</h2>
-          <p class="lead reveal">실습 환경에서 Streamlit은 8080 포트로만 뜹니다. 이전 셀이 살아 있으면 새 셀은 못 뜹니다.</p>
-        </div>
-        <div>
-          <div class="code reveal"><span class="k">from</span> utils.helper <span class="k">import</span> terminate_process
+          <h2 style="margin-bottom: 1.6rem;">
+            환경은 됐다.<br>
+            이제 <em>.env</em>.
+          </h2>
 
-terminate_process()  <span class="c"># 8080 점유 프로세스 종료</span></div>
-          <p class="small reveal" style="margin-top:16px;"><span class="tag">terminate_process</span>는 실습 utils에 미리 포함된 헬퍼. 8080 포트를 점유한 프로세스를 찾아서 깔끔하게 종료합니다.</p>
-        </div>
-      </div>
-      <footer>
-        <span><a href="./index.html">← Hub</a></span>
-        <span class="num">06</span>
-      </footer>
-    </section>
+          <p class="lead">
+            패키지 설치는 '책상 위에 도구를 올려둔 상태'.<br>
+            누가 어떤 API를 호출할지는 아직 모른다.<br>
+            다음 챕터에서 키·URL·시스템명을 한 파일로 정리합니다.
+          </p>
 
-    <!-- 7: Wrap & Next -->
-    <section class="slide" data-notes="챕터 마무리. 환경 세팅은 완료. 다음은 API를 쓰기 위한 인증/주소를 한 곳에 정리하는 .env.">
-      <div class="eyebrow">Chapter 1 · 마무리</div>
-      <div class="frame">
-        <h2 class="reveal">환경 OK.<br>다음은 <span class="gradient-title">.env</span>.</h2>
-        <div class="callout reveal no-bang">패키지 설치는 '도구를 책상 위에 올려둔 상태'. 아직 어떤 API에 누가 호출할지는 모릅니다. Chapter 2에서 키·URL·시스템명을 .env로 한 번만 정리합니다.</div>
-        <p class="reveal" style="margin-top:32px;">
-          <a class="chapter-card" style="display:inline-block;max-width:380px;" href="./chapter-2.html">
-            <span class="num">CH 02 →</span>
-            <span class="ttl">환경변수 .env</span>
-            <span class="desc">매번 반복되는 API 설정을 .env에 모아두는 이유.</span>
+          <a class="next-strip" href="./chapter-2.html" style="margin-top: 3.2rem; max-width: 600px;">
+            <div>
+              <div class="meta">Next · Chapter 02</div>
+              <div class="title">환경변수 <em>.env</em></div>
+            </div>
+            <div class="arrow">→</div>
           </a>
-        </p>
-      </div>
-      <footer>
-        <span><a href="./index.html">← Hub</a> · <a href="./chapter-2.html">Next →</a></span>
-        <span class="num">07</span>
-      </footer>
-    </section>
+        </div>
+      </section>
 
-  </main>
+    </div>
+  </div>
 
-  <div class="progress"><span></span></div>
-  <div class="hint">← → 또는 Space · N: 노트 · P: 인쇄</div>
-  <div class="notes" aria-live="polite"></div>
-  <script src="./shared.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      controls: true,
+      progress: true,
+      center: false,
+      transition: 'fade',
+      slideNumber: 'c/t',
+      width: 1440,
+      height: 900,
+      margin: 0.04
+    });
+  </script>
 </body>
 </html>

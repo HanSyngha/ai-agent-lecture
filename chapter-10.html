@@ -3,129 +3,212 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chapter 10 · 멀티 에이전트 — GenAI Agent</title>
-  <link rel="stylesheet" href="./shared.css">
+  <title>Ch.10 · 멀티 에이전트 — GenAI Agent</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="./styles.css?v=7">
 </head>
-<body>
-  <canvas id="kinetic-bg" aria-hidden="true"></canvas>
-  <main class="deck" aria-live="polite">
+<body data-chapter="10">
 
-    <!-- 1: Title -->
-    <section class="slide active" data-notes="강의 마지막 챕터. 한 LLM에 모든 규칙을 넣지 않고 역할별로 작은 에이전트를 만들어 협업시킨다. 각 에이전트의 시스템 프롬프트는 짧고 명확.">
-      <div class="eyebrow">Chapter 10 · Multi-Agent</div>
-      <div class="frame split">
-        <div>
-          <h1 class="reveal gradient-title">하나가<br>다 짊어지지<br>않는다.</h1>
-          <p class="lead reveal">탐색은 search agent. 평가는 eval agent. 보고는 report agent. 오케스트레이터가 셋을 조율합니다. 각자의 시스템 프롬프트는 작고 분명해집니다.</p>
-        </div>
-        <div class="hero-mark reveal" data-mark="◉◉◉" aria-hidden="true">
-          <div class="orbit"></div>
-        </div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-9.html">Prev</a></span><span class="num">01</span></footer>
-    </section>
+  <div class="atelier-toolbar">
+    <a href="./index.html">← Hub</a>
+    <a href="./chapter-9.html">← 09</a>
+  </div>
 
-    <!-- 2: 단일 vs 멀티 -->
-    <section class="slide" data-notes="단일 에이전트의 한계. 시스템 프롬프트가 비대해질수록 LLM이 헷갈림. 역할 분리로 각자의 책임 영역을 짧게.">
-      <div class="eyebrow">단일 vs 멀티</div>
-      <div class="frame">
-        <h2 class="reveal">큰 LLM 하나 ❌<br><span class="gradient-title">작은 LLM 셋</span> ✅</h2>
-        <div class="matrix three-col reveal">
-          <div class="head">구분</div><div class="head">단일 에이전트</div><div class="head">멀티 에이전트</div>
-          <div>시스템 프롬프트</div><div class="bad">모든 규칙이 하나에</div><div class="good">역할별로 분리, 짧고 명확</div>
-          <div>흐름 제어</div><div>코드에 하드코딩</div><div class="good">오케스트레이터가 동적 결정</div>
-          <div>확장</div><div class="bad">시스템 프롬프트에 추가</div><div class="good">새 에이전트 함수 추가</div>
-          <div>병렬 처리</div><div class="bad">불가</div><div class="good">가능</div>
-        </div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">02</span></footer>
-    </section>
+  <div class="reveal">
+    <div class="slides">
 
-    <!-- 3: 아키텍처 -->
-    <section class="slide" data-notes="멀티 에이전트의 그림. 오케스트레이터가 가운데. 각 에이전트는 자기 툴 셋만 가짐. 결과는 dict로 주고받음.">
-      <div class="eyebrow">아키텍처</div>
-      <div class="frame">
-        <h2 class="reveal">오케스트레이터 +<br><span class="gradient-title">역할별 에이전트</span>.</h2>
-        <div class="diagram reveal">
-          <div class="flow">
-            <div class="flow-row" style="justify-content:center;">
-              <div class="node llm" style="min-width:280px;">오케스트레이터<br><small>전체 흐름 관리, 다음 에이전트 결정</small></div>
-            </div>
-            <div class="flow-row" style="justify-content:center;">
-              <div class="arrow label">↓ 결과 보고 다음 결정 ↑</div>
-            </div>
-            <div class="flow-row evenly">
-              <div class="node tool">🔍 search<br><small>execute_sql<br>retrieve_from_rag</small></div>
-              <div class="node tool">⚖️ eval<br><small>execute_sql<br>get_confluence</small></div>
-              <div class="node tool">📨 report<br><small>save_excel<br>send_email</small></div>
-            </div>
+      <!-- 1: Title -->
+      <section>
+        <div class="watermark">10</div>
+        <div class="slide-content center-y">
+          <div class="chip">Chapter 10 · Multi-Agent</div>
+          <h1>
+            하나가<br>
+            다 짊어지지<br>
+            <em>않는다</em>.
+          </h1>
+          <p class="lead" style="margin-top: 2rem;">
+            탐색은 search agent. 평가는 eval agent. 보고는 report agent.<br>
+            오케스트레이터가 셋을 조율한다.<br>
+            <em>각자의 시스템 프롬프트는 작고 분명해진다.</em>
+          </p>
+        </div>
+      </section>
+
+      <!-- 2: Single vs Multi -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">단일 vs 멀티</div>
+
+          <h2 style="margin-bottom: 2rem;">
+            큰 LLM 하나 <span style="color: var(--coral)">❌</span><br>
+            <em>작은 LLM 셋</em> <span style="color: var(--accent)">✓</span>
+          </h2>
+
+          <div class="compare">
+            <div class="head">구분</div>
+            <div class="head">단일 에이전트</div>
+            <div class="head">멀티 에이전트</div>
+
+            <div>시스템 프롬프트</div>
+            <div class="no">모든 규칙이 하나에</div>
+            <div class="yes">역할별로 분리, 짧고 명확</div>
+
+            <div>흐름 제어</div>
+            <div class="no">코드에 하드코딩</div>
+            <div class="yes">오케스트레이터가 동적 결정</div>
+
+            <div>확장</div>
+            <div class="no">시스템 프롬프트에 추가</div>
+            <div class="yes">새 에이전트 함수 추가</div>
+
+            <div>병렬 처리</div>
+            <div class="no">불가</div>
+            <div class="yes">가능</div>
           </div>
         </div>
-        <p class="lead reveal">각 에이전트는 자기 역할에 필요한 툴만 가집니다. 컨텍스트가 좁아지므로 LLM이 헷갈릴 일이 줄어듭니다.</p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">03</span></footer>
-    </section>
+      </section>
 
-    <!-- 4: 툴 그룹화 -->
-    <section class="slide" data-notes="에이전트별 툴 그룹화. all_tools에서 filter 한 번이면 끝. Chapter 8의 handle_request를 그대로 재사용.">
-      <div class="eyebrow">Code · 툴 그룹화</div>
-      <div class="frame">
-        <h2 class="reveal">에이전트마다<br><span class="gradient-title">필요한 툴만</span>.</h2>
-        <div class="code reveal"><span class="k">from</span> tools_specs <span class="k">import</span> make_tools
+      <!-- 3: Architecture diagram -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">아키텍처</div>
+
+          <h2 style="margin-bottom: 1.6rem;">
+            오케스트레이터 +<br>
+            <em>역할별 에이전트</em>.
+          </h2>
+
+          <div class="diagram">
+            <svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+              <!-- orchestrator -->
+              <g class="fade-in">
+                <rect class="node-bg llm" x="280" y="20" rx="12" width="340" height="70" style="stroke-width: 2;"/>
+                <text x="450" y="50" text-anchor="middle" class="serif">오케스트레이터</text>
+                <text x="450" y="72" text-anchor="middle" class="label">전체 흐름 관리, 다음 에이전트 결정</text>
+              </g>
+
+              <!-- connecting trunk -->
+              <g class="draw">
+                <path class="edge accent" d="M450 90 L450 130" stroke-width="2"/>
+                <path class="edge accent" d="M150 130 L750 130" stroke-width="2"/>
+                <path class="edge accent" d="M150 130 L150 175" stroke-width="2"/>
+                <path class="edge accent" d="M450 130 L450 175" stroke-width="2"/>
+                <path class="edge accent" d="M750 130 L750 175" stroke-width="2"/>
+              </g>
+
+              <!-- agents -->
+              <g class="fade-in">
+                <rect class="node-bg tool" x="50"  y="180" rx="10" width="200" height="100"/>
+                <text x="150" y="210" text-anchor="middle" class="serif">🔍 search</text>
+                <text x="150" y="240" text-anchor="middle" class="label">execute_sql</text>
+                <text x="150" y="258" text-anchor="middle" class="label">retrieve_from_rag</text>
+              </g>
+              <g class="fade-in">
+                <rect class="node-bg tool" x="350" y="180" rx="10" width="200" height="100"/>
+                <text x="450" y="210" text-anchor="middle" class="serif">⚖️ eval</text>
+                <text x="450" y="240" text-anchor="middle" class="label">execute_sql</text>
+                <text x="450" y="258" text-anchor="middle" class="label">get_confluence</text>
+              </g>
+              <g class="fade-in">
+                <rect class="node-bg tool" x="650" y="180" rx="10" width="200" height="100"/>
+                <text x="750" y="210" text-anchor="middle" class="serif">📨 report</text>
+                <text x="750" y="240" text-anchor="middle" class="label">save_excel</text>
+                <text x="750" y="258" text-anchor="middle" class="label">send_email</text>
+              </g>
+            </svg>
+          </div>
+
+          <p class="lead" style="margin-top: 1.6rem;">
+            각 에이전트는 자기 역할에 필요한 툴만 가진다.<br>
+            컨텍스트가 좁아지므로 LLM이 헷갈릴 일이 줄어든다.
+          </p>
+        </div>
+      </section>
+
+      <!-- 4: Tool grouping -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Code · 툴 그룹화</div>
+
+          <h2>
+            에이전트마다<br>
+            <em>필요한 툴만</em>.
+          </h2>
+
+<pre class="code" data-lang="python" style="margin-top: 1.8rem;"><span class="k">from</span> tools_specs <span class="k">import</span> make_tools
 all_tools = <span class="fn">make_tools</span>()
 
-<span class="hl">search_tools = [t <span class="k">for</span> t <span class="k">in</span> all_tools <span class="k">if</span> t[<span class="s">"function"</span>][<span class="s">"name"</span>] <span class="k">in</span>
+<span class="em">search_tools = [t <span class="k">for</span> t <span class="k">in</span> all_tools <span class="k">if</span> t[<span class="s">"function"</span>][<span class="s">"name"</span>] <span class="k">in</span>
                 [<span class="s">"execute_sql"</span>, <span class="s">"retrieve_from_rag"</span>]]</span>
 
-<span class="hl">eval_tools = [t <span class="k">for</span> t <span class="k">in</span> all_tools <span class="k">if</span> t[<span class="s">"function"</span>][<span class="s">"name"</span>] <span class="k">in</span>
-              [<span class="s">"execute_sql"</span>, <span class="s">"get_confluence_page_content"</span>]]</span>
+<span class="em">eval_tools   = [t <span class="k">for</span> t <span class="k">in</span> all_tools <span class="k">if</span> t[<span class="s">"function"</span>][<span class="s">"name"</span>] <span class="k">in</span>
+                [<span class="s">"execute_sql"</span>, <span class="s">"get_confluence_page_content"</span>]]</span>
 
-<span class="hl">report_tools = [t <span class="k">for</span> t <span class="k">in</span> all_tools <span class="k">if</span> t[<span class="s">"function"</span>][<span class="s">"name"</span>] <span class="k">in</span>
-                [<span class="s">"save_excel"</span>, <span class="s">"send_email"</span>]]</span></div>
-        <p class="small reveal">전체 툴 카탈로그에서 역할에 맞는 부분만 잘라서 전달. 각 에이전트는 자기 영역 바깥의 툴은 호출할 수 없습니다 — 부주의한 호출도 방지.</p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">04</span></footer>
-    </section>
+<span class="em">report_tools = [t <span class="k">for</span> t <span class="k">in</span> all_tools <span class="k">if</span> t[<span class="s">"function"</span>][<span class="s">"name"</span>] <span class="k">in</span>
+                [<span class="s">"save_excel"</span>, <span class="s">"send_email"</span>]]</span></pre>
 
-    <!-- 5: 에이전트 wrapper -->
-    <section class="slide" data-notes="에이전트는 run_agent()의 래퍼. handle_request랑 거의 같음. 다른 건 system_prompt와 tools뿐. 결과를 result dict에 누적.">
-      <div class="eyebrow">Code · 에이전트 = wrapper</div>
-      <div class="frame">
-        <h2 class="reveal">에이전트는<br>그냥 <span class="gradient-title">래퍼 함수</span>.</h2>
-        <div class="code reveal"><span class="k">def</span> <span class="fn">run_agent</span>(system_prompt, user_message, tools, max_steps=<span class="n">10</span>):
+          <p class="small" style="margin-top: 1.2rem;">
+            전체 카탈로그에서 역할에 맞는 부분만 잘라 전달.<br>
+            각 에이전트는 자기 영역 바깥의 툴은 호출할 수 없다 — 부주의한 호출도 방지.
+          </p>
+        </div>
+      </section>
+
+      <!-- 5: Agent wrapper -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Code · 에이전트 = 래퍼</div>
+
+          <h2>
+            에이전트는<br>
+            그냥 <em>래퍼 함수</em>.
+          </h2>
+
+<pre class="code" data-lang="python" style="margin-top: 1.6rem;"><span class="k">def</span> <span class="fn">run_agent</span>(system_prompt, user_message, tools, max_steps=<span class="n">10</span>):
     <span class="c"># Chapter 8의 handle_request와 동일한 피드백 루프</span>
     ...
 
 <span class="k">def</span> <span class="fn">search_agent</span>(result):
-    output = <span class="fn">run_agent</span>(<span class="hl">search_system_prompt</span>,
+    output = <span class="fn">run_agent</span>(<span class="em">search_system_prompt</span>,
                        <span class="s">f"목표: {result['goal']}"</span>,
-                       <span class="hl">search_tools</span>)
+                       <span class="em">search_tools</span>)
     result[<span class="s">"resume_ids"</span>] = output
     <span class="k">return</span> result
 
 <span class="k">def</span> <span class="fn">eval_agent</span>(result):
-    output = <span class="fn">run_agent</span>(<span class="hl">eval_system_prompt</span>,
+    output = <span class="fn">run_agent</span>(<span class="em">eval_system_prompt</span>,
                        <span class="s">f"이력서: {result['resume_ids']}\n목표: {result['goal']}"</span>,
-                       <span class="hl">eval_tools</span>)
+                       <span class="em">eval_tools</span>)
     result[<span class="s">"eval_result"</span>] = output
     <span class="k">return</span> result
 
 <span class="k">def</span> <span class="fn">report_agent</span>(result):
-    <span class="fn">run_agent</span>(<span class="hl">report_system_prompt</span>,
+    <span class="fn">run_agent</span>(<span class="em">report_system_prompt</span>,
               <span class="s">f"평가 결과: {result['eval_result']}"</span>,
-              <span class="hl">report_tools</span>)
+              <span class="em">report_tools</span>)
     result[<span class="s">"report_done"</span>] = <span class="n">True</span>
-    <span class="k">return</span> result</div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">05</span></footer>
-    </section>
+    <span class="k">return</span> result</pre>
+        </div>
+      </section>
 
-    <!-- 6: 오케스트레이터 -->
-    <section class="slide" data-notes="오케스트레이터. 현재 result dict의 상태를 보고 다음에 누구를 부를지 LLM에게 JSON으로 답하게 함. end가 나올 때까지.">
-      <div class="eyebrow">Code · 오케스트레이터</div>
-      <div class="frame">
-        <h2 class="reveal">매 단계,<br>다음 에이전트를 <span class="gradient-title">묻는다</span>.</h2>
-        <div class="code reveal"><span class="k">def</span> <span class="fn">orchestrator</span>(result):
+      <!-- 6: Orchestrator -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Code · 오케스트레이터</div>
+
+          <h2>
+            매 단계,<br>
+            다음 에이전트를 <em>묻는다</em>.
+          </h2>
+
+<pre class="code" data-lang="python" style="margin-top: 1.6rem;"><span class="k">def</span> <span class="fn">orchestrator</span>(result):
     status = <span class="s">f"""
 목표: {result['goal']}
 search 완료: {'완료' <span class="k">if</span> result.<span class="fn">get</span>('resume_ids') <span class="k">else</span> '미완료'}
@@ -133,7 +216,7 @@ eval 완료:   {'완료' <span class="k">if</span> result.<span class="fn">get</
 report 완료: {'완료' <span class="k">if</span> result.<span class="fn">get</span>('report_done') <span class="k">else</span> '미완료'}"""</span>
 
     message = <span class="fn">generate_response</span>([{<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: orchestrator_system_prompt},
-                                  {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: status}])
+                                  {<span class="s">"role"</span>: <span class="s">"user"</span>,   <span class="s">"content"</span>: status}])
     decision = json.<span class="fn">loads</span>(message.content)
     <span class="k">return</span> decision.<span class="fn">get</span>(<span class="s">"next_agent"</span>, <span class="s">"end"</span>)
 
@@ -146,82 +229,119 @@ AGENT_MAP = {<span class="s">"search"</span>: search_agent, <span class="s">"eva
         next_agent = <span class="fn">orchestrator</span>(result)
         <span class="k">if</span> next_agent == <span class="s">"end"</span>: <span class="k">break</span>
         result = AGENT_MAP[next_agent](result)
-    <span class="k">return</span> result</div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">06</span></footer>
-    </section>
-
-    <!-- 7: Planning orchestrator -->
-    <section class="slide" data-notes="심화. 오케스트레이터에도 Planning을 적용. 매번 묻지 말고 처음에 계획만 한 번. 단순 비교: 매번 LLM 호출 vs 처음만.">
-      <div class="eyebrow">심화 · Planning Orchestrator</div>
-      <div class="frame">
-        <h2 class="reveal">오케스트레이터에도<br><span class="gradient-title">Planning</span>을.</h2>
-        <div class="cards two reveal">
-          <div class="card">
-            <strong>매번 묻는 orchestrator</strong>
-            <p>완료 상태 보고 → 다음 에이전트 결정 → 실행 → 완료 상태 보고 → 결정 → ...</p>
-            <p style="color:rgba(255,107,53,0.8);">완료 횟수만큼 LLM 호출.</p>
-          </div>
-          <div class="card">
-            <strong>Planning orchestrator</strong>
-            <p>처음 한 번 호출 → ["search", "eval", "report"] 계획 수립 → 순서대로 실행.</p>
-            <p style="color:rgba(223,251,82,0.8);">LLM 호출 1번으로 끝.</p>
-          </div>
+    <span class="k">return</span> result</pre>
         </div>
-        <div class="code reveal" style="font-size:0.9em;"><span class="k">def</span> <span class="fn">planning_orchestrator</span>(result):
+      </section>
+
+      <!-- 7: Planning orchestrator -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">심화 · Planning Orchestrator</div>
+
+          <h2 style="margin-bottom: 2rem;">
+            오케스트레이터에도<br>
+            <em>Planning</em>을.
+          </h2>
+
+          <div class="grid-2-tight stagger">
+            <div class="card">
+              <h4 style="color: var(--coral) !important;">매번 묻는 방식</h4>
+              <p>완료 상태 보고 → 다음 결정 → 실행 → 완료 상태 → 결정 → ...<br><strong style="color: var(--coral);">완료 횟수만큼 LLM 호출.</strong></p>
+            </div>
+            <div class="card">
+              <h4 style="color: var(--accent) !important;">Planning 방식</h4>
+              <p>처음 한 번 호출 → <code>["search", "eval", "report"]</code> 계획 수립 → 순서대로 실행.<br><strong style="color: var(--accent);">LLM 호출 1번으로 끝.</strong></p>
+            </div>
+          </div>
+
+<pre class="code" data-lang="python" style="margin-top: 1.6rem;"><span class="k">def</span> <span class="fn">planning_orchestrator</span>(result):
     <span class="k">if</span> <span class="k">not</span> result.<span class="fn">get</span>(<span class="s">"plan"</span>):
         <span class="c"># 처음 한 번만 계획 수립</span>
-        decision = <span class="fn">make_plan_for_agents</span>(result[<span class="s">"goal"</span>])
-        result[<span class="s">"plan"</span>] = decision[<span class="s">"plan"</span>]
+        result[<span class="s">"plan"</span>] = <span class="fn">make_plan_for_agents</span>(result[<span class="s">"goal"</span>])[<span class="s">"plan"</span>]
         result[<span class="s">"current_step"</span>] = <span class="n">0</span>
 
     i = result[<span class="s">"current_step"</span>]
     <span class="k">if</span> i &gt;= <span class="fn">len</span>(result[<span class="s">"plan"</span>]): <span class="k">return</span> <span class="s">"end"</span>
     result[<span class="s">"current_step"</span>] = i + <span class="n">1</span>
-    <span class="k">return</span> result[<span class="s">"plan"</span>][i]</div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">07</span></footer>
-    </section>
-
-    <!-- 8: 핵심 정리 -->
-    <section class="slide" data-notes="강의 전체 정리. 한 줄로: 'LLM에 손 달고, 판단 권한을 점진적으로 이양'. 그 과정에서 등장한 핵심 개념 5개.">
-      <div class="eyebrow">강의 전체 정리</div>
-      <div class="frame">
-        <h2 class="reveal">10장의 한 줄 요약.</h2>
-        <div class="steps reveal">
-          <div class="step"><div><strong>역할 부여</strong><span>system prompt가 LLM의 기본 행동을 정의한다.</span></div></div>
-          <div class="step"><div><strong>대화는 누적</strong><span>history list로 매번 통째로 다시 전달.</span></div></div>
-          <div class="step"><div><strong>툴 = 함수</strong><span>LLM이 못 하는 일을 대신하는 일반 파이썬 함수.</span></div></div>
-          <div class="step"><div><strong>결정 권한 이양</strong><span>코드가 결정 → LLM이 결정. JSON → tool_calls API.</span></div></div>
-          <div class="step"><div><strong>설계 패턴</strong><span>피드백 루프(ReAct) → Planning → Multi-Agent. 복잡도에 따라.</span></div></div>
+    <span class="k">return</span> result[<span class="s">"plan"</span>][i]</pre>
         </div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">08</span></footer>
-    </section>
+      </section>
 
-    <!-- 9: 축하 -->
-    <section class="slide" data-notes="강의 완료. 청중에게 축하의 톤. 다음 학습 방향(MCP, LangGraph 등) 한 줄 정도 언급해도 좋음.">
-      <div class="eyebrow">완강</div>
-      <div class="frame">
-        <h2 class="reveal gradient-title">축하합니다.<br>여기까지가<br>출발선입니다.</h2>
-        <div class="callout reveal no-bang">10장의 흐름을 한 번에 다시 보면: LLM 호출 → 대화 기억 → 툴 → 워크플로우 → 자율 선택 → 피드백 루프 → Planning → Multi-Agent. 이 다음은 도메인. 채용 평가가 아니라 여러분의 업무에 같은 패턴을 적용해보세요.</div>
-        <p class="lead reveal" style="margin-top:24px;">📚 더 깊이: MCP(Model Context Protocol), LangGraph, AutoGen, OpenAI Assistants API. — 모두 이 10장에서 본 패턴의 변주입니다.</p>
-        <p class="reveal" style="margin-top:24px;">
-          <a class="chapter-card" style="display:inline-block;max-width:380px;" href="./index.html">
-            <span class="num">← HUB</span>
-            <span class="ttl">처음으로</span>
-            <span class="desc">10장의 챕터 인덱스로 돌아가기.</span>
+      <!-- 8: Whole-course summary -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">강의 전체 정리</div>
+
+          <h2 style="margin-bottom: 2.2rem;">
+            열 장의<br>
+            <em>한 줄</em> 요약.
+          </h2>
+
+          <div class="steps stagger">
+            <div class="step">
+              <h4>역할 부여</h4>
+              <p>system prompt가 LLM의 기본 행동을 정의한다.</p>
+            </div>
+            <div class="step">
+              <h4>대화는 누적</h4>
+              <p>history list로 매번 통째로 다시 전달.</p>
+            </div>
+            <div class="step">
+              <h4>툴 = 함수</h4>
+              <p>LLM이 못 하는 일을 대신하는 일반 파이썬 함수.</p>
+            </div>
+            <div class="step">
+              <h4>결정 권한 이양</h4>
+              <p>코드가 결정 → LLM이 결정. JSON → tool_calls API.</p>
+            </div>
+            <div class="step">
+              <h4>설계 패턴</h4>
+              <p>피드백 루프(ReAct) → Planning → Multi-Agent. 복잡도에 따라.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9: Outro -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content center-y">
+          <div class="chip">완강</div>
+
+          <h1 style="font-size: clamp(4rem, 8vw, 8rem);">
+            축하합니다.<br>
+            <em>여기까지</em>가<br>
+            출발선입니다.
+          </h1>
+
+          <p class="lead" style="margin-top: 2.4rem;">
+            이 다음은 도메인.<br>
+            채용 평가가 아니라 <em>여러분의 업무</em>에 같은 패턴을 적용해보세요.
+          </p>
+
+          <p class="small" style="margin-top: 1.8rem;">
+            더 깊이 — MCP · LangGraph · AutoGen · OpenAI Assistants API.<br>
+            모두 이 열 장에서 본 패턴의 변주.
+          </p>
+
+          <a class="next-strip" href="./index.html" style="margin-top: 3rem; max-width: 600px;">
+            <div>
+              <div class="meta">← Hub</div>
+              <div class="title">처음으로 <em>돌아가기</em></div>
+            </div>
+            <div class="arrow">←</div>
           </a>
-        </p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a> · END</span><span class="num">09</span></footer>
-    </section>
+        </div>
+      </section>
 
-  </main>
+    </div>
+  </div>
 
-  <div class="progress"><span></span></div>
-  <div class="hint">← → 또는 Space · N: 노트 · P: 인쇄</div>
-  <div class="notes" aria-live="polite"></div>
-  <script src="./shared.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({ hash: true, controls: true, progress: true, center: false, transition: 'fade', slideNumber: 'c/t', width: 1440, height: 900, margin: 0.04 });
+  </script>
 </body>
 </html>

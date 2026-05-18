@@ -3,74 +3,129 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chapter 7 · Decision · 자율 툴 선택 — GenAI Agent</title>
-  <link rel="stylesheet" href="./shared.css">
+  <title>Ch.07 · Decision, 자율 툴 선택 — GenAI Agent</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="./styles.css?v=7">
 </head>
-<body>
-  <canvas id="kinetic-bg" aria-hidden="true"></canvas>
-  <main class="deck" aria-live="polite">
+<body data-chapter="7">
 
-    <!-- 1: Title -->
-    <section class="slide active" data-notes="이 챕터의 핵심 변화: 코드는 그대로 두고 프롬프트만 바꿔도 LLM이 다른 툴을 부른다. 결정 권한이 사람 → LLM으로 처음 넘어가는 순간.">
-      <div class="eyebrow">Chapter 07 · Decision</div>
-      <div class="frame split">
-        <div>
-          <h1 class="reveal gradient-title">결정 권한을<br>처음으로<br>LLM에게.</h1>
-          <p class="lead reveal">툴 목록을 시스템 프롬프트에 적어주고, LLM에게 'JSON으로 무엇을 부를지' 답하라고 시킵니다. 우리는 그 JSON을 파싱해 실제로 함수를 부릅니다.</p>
-        </div>
-        <div class="hero-mark reveal" data-mark="?→!" aria-hidden="true">
-          <div class="orbit"></div>
-        </div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-6.html">Prev</a></span><span class="num">01</span></footer>
-    </section>
+  <div class="atelier-toolbar">
+    <a href="./index.html">← Hub</a>
+    <a href="./chapter-6.html">← 06</a>
+    <a href="./chapter-8.html">08 →</a>
+  </div>
 
-    <!-- 2: 고정 vs 자율 -->
-    <section class="slide" data-notes="이 챕터의 가치 명제. 같은 코드가 다른 요청을 처리할 수 있게 된다.">
-      <div class="eyebrow">고정 vs 자율</div>
-      <div class="frame">
-        <h2 class="reveal">코드는 <span class="gradient-title">하나</span>,<br>요청은 <span class="gradient-title">무한</span>.</h2>
-        <div class="matrix three-col reveal">
-          <div class="head">구분</div><div class="head">Chapter 6 (고정)</div><div class="head">Chapter 7 (자율)</div>
-          <div>툴 순서</div><div class="bad">개발자가 코드로 박음</div><div class="good">LLM이 요청 보고 선택</div>
-          <div>유연성</div><div class="bad">결과 바뀌면 코드 수정</div><div class="good">프롬프트만 바꾸면 됨</div>
-          <div>코드량</div><div class="bad">시나리오마다 다른 함수</div><div class="good">하나로 모든 요청 처리</div>
-        </div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">02</span></footer>
-    </section>
+  <div class="reveal">
+    <div class="slides">
 
-    <!-- 3: 흐름 -->
-    <section class="slide" data-notes="기본 흐름. 사용자 요청 → LLM이 JSON으로 답 → 코드가 파싱 → 함수 호출.">
-      <div class="eyebrow">기본 흐름</div>
-      <div class="frame">
-        <h2 class="reveal">LLM의 답을<br><span class="gradient-title">JSON</span>으로 받는다.</h2>
-        <div class="diagram reveal">
-          <div class="flow">
-            <div class="flow-row evenly">
-              <div class="node user">사용자 요청</div>
-              <div class="arrow">→</div>
-              <div class="node llm">LLM<br><small>툴 + params를 JSON으로</small></div>
-              <div class="arrow">→</div>
-              <div class="node">json.loads<br><small>파싱</small></div>
-              <div class="arrow">→</div>
-              <div class="node tool">TOOLS[name](**params)<br><small>실제 실행</small></div>
-              <div class="arrow">→</div>
-              <div class="node user">결과</div>
-            </div>
+      <!-- 1: Title -->
+      <section>
+        <div class="watermark">07</div>
+        <div class="slide-content center-y">
+          <div class="chip">Chapter 07 · Decision</div>
+          <h1>
+            결정 권한을<br>
+            <em>처음으로</em><br>
+            LLM에게.
+          </h1>
+          <p class="lead" style="margin-top: 2rem;">
+            툴 목록을 시스템 프롬프트에 적어주고,<br>
+            LLM에게 '<em>JSON으로</em> 무엇을 부를지' 답하라고 시킨다.<br>
+            우리는 그 JSON을 파싱해 실제로 함수를 부른다.
+          </p>
+        </div>
+      </section>
+
+      <!-- 2: Fixed vs Autonomous -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">고정 vs 자율</div>
+
+          <h2 style="margin-bottom: 2rem;">
+            코드는 <em>하나</em>,<br>
+            요청은 <em>무한</em>.
+          </h2>
+
+          <div class="compare">
+            <div class="head">구분</div>
+            <div class="head">Chapter 06 (고정)</div>
+            <div class="head">Chapter 07 (자율)</div>
+
+            <div>툴 순서</div>
+            <div class="no">개발자가 코드로 박음</div>
+            <div class="yes">LLM이 요청 보고 선택</div>
+
+            <div>유연성</div>
+            <div class="no">결과 바뀌면 코드 수정</div>
+            <div class="yes">프롬프트만 바꾸면 됨</div>
+
+            <div>코드량</div>
+            <div class="no">시나리오마다 함수</div>
+            <div class="yes">하나로 모든 요청 처리</div>
           </div>
         </div>
-        <p class="lead reveal">코드는 LLM이 어떤 툴을 골랐는지 모릅니다. 그저 JSON을 파싱해서 dict[툴이름]에서 함수를 꺼내 호출할 뿐 — <span class="tag">TOOLS = {...}</span> 한 줄이면 끝.</p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">03</span></footer>
-    </section>
+      </section>
 
-    <!-- 4: 시스템 프롬프트 -->
-    <section class="slide" data-notes="시스템 프롬프트가 길어지는 첫 챕터. 툴 목록, JSON 출력 규칙, 결과 해석 규칙 등을 한 곳에 적습니다. 후반에서 이 비대함을 깨려고 멀티 에이전트가 등장.">
-      <div class="eyebrow">Code · 시스템 프롬프트</div>
-      <div class="frame">
-        <h2 class="reveal">툴 카탈로그를<br>프롬프트에 적는다.</h2>
-        <div class="code reveal">system_prompt = <span class="s">"""
+      <!-- 3: Flow -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">기본 흐름</div>
+
+          <h2 style="margin-bottom: 1.8rem;">
+            LLM의 답을<br>
+            <em>JSON</em>으로 받는다.
+          </h2>
+
+          <div class="diagram">
+            <svg viewBox="0 0 900 130" xmlns="http://www.w3.org/2000/svg">
+              <g class="fade-in">
+                <rect class="node-bg user" x="20"  y="40" rx="8" width="140" height="55"/>
+                <rect class="node-bg llm"  x="190" y="40" rx="8" width="180" height="55"/>
+                <rect class="node-bg"      x="400" y="40" rx="8" width="160" height="55"/>
+                <rect class="node-bg tool" x="590" y="40" rx="8" width="180" height="55"/>
+                <rect class="node-bg user" x="800" y="40" rx="8" width="80" height="55"/>
+              </g>
+              <g class="fade-in">
+                <text x="90"  y="65" text-anchor="middle">사용자 요청</text>
+                <text x="280" y="62" text-anchor="middle">LLM</text>
+                <text x="280" y="82" text-anchor="middle" class="label">툴+params → JSON</text>
+                <text x="480" y="62" text-anchor="middle">json.loads</text>
+                <text x="480" y="82" text-anchor="middle" class="label">파싱</text>
+                <text x="680" y="62" text-anchor="middle">TOOLS[name](**params)</text>
+                <text x="680" y="82" text-anchor="middle" class="label">실제 실행</text>
+                <text x="840" y="68" text-anchor="middle" class="serif">결과</text>
+              </g>
+              <g class="draw">
+                <path class="edge" d="M160 67 L190 67"/>
+                <path class="edge accent" d="M370 67 L400 67"/>
+                <path class="edge" d="M560 67 L590 67"/>
+                <path class="edge accent" d="M770 67 L800 67"/>
+              </g>
+            </svg>
+          </div>
+
+          <p class="lead" style="margin-top: 1.6rem;">
+            코드는 LLM이 어떤 툴을 골랐는지 모른다.<br>
+            그저 JSON을 파싱해 <code>TOOLS[name]</code> 에서 함수를 꺼내 호출할 뿐.
+          </p>
+        </div>
+      </section>
+
+      <!-- 4: System prompt -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Code · 시스템 프롬프트</div>
+
+          <h2>
+            툴 카탈로그를<br>
+            프롬프트에 <em>적는다</em>.
+          </h2>
+
+<pre class="code" data-lang="python" style="margin-top: 1.8rem;">system_prompt = <span class="s">"""
 당신은 채용 업무를 처리하는 AI 어시스턴트입니다.
 사용자의 요청에 맞는 툴을 선택하고 결과를 해석하여 답변합니다.
 
@@ -83,102 +138,133 @@
 
 출력 규칙:
 1. 응답은 반드시 JSON 객체 하나만 출력하세요.
-   {"tool": "툴이름", "params": {"파라미터명": "값"}, "label": "설명"}
+   <span class="em">{"tool": "툴이름", "params": {...}, "label": "설명"}</span>
 2. 툴이 필요 없으면:
-   {"tool": null, "params": {}, "reply": "한국어 답변", "label": "설명"}
+   <span class="em">{"tool": null, "params": {}, "reply": "...", "label": "..."}</span>
 3. JSON 앞뒤에 어떤 설명, 코드펜스도 추가하지 마세요.
-"""</span></div>
-        <p class="small reveal">규칙이 명시적일수록 LLM이 JSON을 안정적으로 뱉습니다. <span class="tag">코드펜스 금지</span>, <span class="tag">객체 하나만</span> 같은 지시가 중요.</p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">04</span></footer>
-    </section>
+"""</span></pre>
 
-    <!-- 5: handle_request 코드 -->
-    <section class="slide" data-notes="코드의 핵심. LLM 답을 파싱 → tool dispatch → history 누적. 이 모양이 다음 챕터의 tool_calls API로 자동화됩니다.">
-      <div class="eyebrow">Code · 한 번의 요청 처리</div>
-      <div class="frame">
-        <h2 class="reveal">파싱 →<br>dispatch →<br><span class="gradient-title">히스토리 누적</span>.</h2>
-        <div class="code reveal"><span class="k">def</span> <span class="fn">handle_request</span>(user_prompt, history):
+          <p class="small" style="margin-top: 1.2rem;">
+            규칙이 명시적일수록 LLM이 JSON을 안정적으로 뱉는다.<br>
+            <code>코드펜스 금지</code>, <code>객체 하나만</code> 같은 지시가 중요.
+          </p>
+        </div>
+      </section>
+
+      <!-- 5: handle_request code -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Code · 한 번의 요청 처리</div>
+
+          <h2>
+            파싱 → dispatch →<br>
+            <em>히스토리 누적</em>.
+          </h2>
+
+<pre class="code" data-lang="python" style="margin-top: 1.6rem;"><span class="k">def</span> <span class="fn">handle_request</span>(user_prompt, history):
     history.<span class="fn">append</span>({<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_prompt})
 
     <span class="c"># 1. LLM이 JSON으로 답</span>
     llm_response = <span class="fn">generate_response</span>(history, stream=<span class="n">False</span>)
-    <span class="hl">decision = json.<span class="fn">loads</span>(llm_response)</span>
+    <span class="em">decision = json.<span class="fn">loads</span>(llm_response)</span>
 
     tool_name = decision.<span class="fn">get</span>(<span class="s">"tool"</span>)
     params    = decision.<span class="fn">get</span>(<span class="s">"params"</span>, {})
 
     <span class="k">if</span> tool_name <span class="k">and</span> tool_name <span class="k">in</span> TOOLS:
         <span class="c"># 2. 툴 실행</span>
-        <span class="hl">tool_result = TOOLS[tool_name](**params)</span>
+        <span class="em">tool_result = TOOLS[tool_name](**params)</span>
         history.<span class="fn">append</span>({<span class="s">"role"</span>: <span class="s">"tool"</span>, <span class="s">"content"</span>: <span class="fn">str</span>(tool_result)})
     <span class="k">else</span>:
         history.<span class="fn">append</span>({<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: decision[<span class="s">"reply"</span>]})
 
-    <span class="k">return</span> history</div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">05</span></footer>
-    </section>
-
-    <!-- 6: 실행 예 -->
-    <section class="slide" data-notes="시각화. 같은 코드인데 사용자 요청에 따라 다른 툴이 호출. JSON으로 답한다는 게 어떤 모양인지 한 번 더 못박기.">
-      <div class="eyebrow">실제 흐름</div>
-      <div class="frame">
-        <h2 class="reveal">요청이 달라도<br><span class="gradient-title">함수는 하나</span>.</h2>
-        <div class="dialogue reveal">
-          <div class="bubble"><b>USER</b><span>채용공고 보여줘</span></div>
-          <div class="bubble ai"><b>LLM</b><span>{"tool":"execute_sql", "params":{"sql_query":"SELECT * FROM job_posting"}, ...}</span></div>
-          <div class="bubble tool"><b>TOOL execute_sql</b><span>[{department: "...", job_description: "..."}, ...]</span></div>
-          <div class="bubble"><b>USER</b><span>임베디드 경험자 찾아</span></div>
-          <div class="bubble ai"><b>LLM</b><span>{"tool":"retrieve_from_rag", "params":{"query":"임베디드"}, ...}</span></div>
-          <div class="bubble tool"><b>TOOL retrieve_from_rag</b><span>[{resume_id: 24647, ...}, ...]</span></div>
+    <span class="k">return</span> history</pre>
         </div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">06</span></footer>
-    </section>
+      </section>
 
-    <!-- 7: 한계 + 피드백 루프 도입 -->
-    <section class="slide" data-notes="JSON 방식의 약점. 가끔 코드펜스 붙이거나 형식 망가뜨림. 또 한 호출에 한 툴만 실행하고 끝. 그래서 결과 보고 다음 행동 결정하는 루프가 필요.">
-      <div class="eyebrow">JSON 방식의 약점</div>
-      <div class="frame">
-        <h2 class="reveal">하지만<br><span class="gradient-title">LLM은 가끔 어긋난다</span>.</h2>
-        <div class="cards two reveal">
-          <div class="card">
-            <strong>파싱 실패</strong>
-            <p>코드펜스(```json)를 붙이거나 JSON 앞뒤에 설명을 다는 경우. json.loads()가 터집니다.</p>
-          </div>
-          <div class="card">
-            <strong>한 번에 한 툴만</strong>
-            <p>한 호출에 결정이 하나. 툴 실행 결과를 바탕으로 다음 툴을 부르려면 다시 호출해야 합니다.</p>
+      <!-- 6: Same code, different tool -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">실제 흐름</div>
+
+          <h2 style="margin-bottom: 2rem;">
+            요청이 달라도<br>
+            <em>함수는 하나</em>.
+          </h2>
+
+          <div class="chat" style="margin: 0 auto;">
+            <div class="bubble user"><span class="who">USER</span>채용공고 보여줘</div>
+            <div class="bubble ai"><span class="who">LLM</span><code>{"tool":"execute_sql", "params":{"sql_query":"SELECT * FROM job_posting"}}</code></div>
+            <div class="bubble tool"><span class="who">TOOL · execute_sql</span>[{department: "...", job_description: "..."}, ...]</div>
+            <div class="bubble user"><span class="who">USER</span>임베디드 경험자 찾아</div>
+            <div class="bubble ai"><span class="who">LLM</span><code>{"tool":"retrieve_from_rag", "params":{"query":"임베디드"}}</code></div>
+            <div class="bubble tool"><span class="who">TOOL · retrieve_from_rag</span>[{resume_id: 24647, ...}, ...]</div>
           </div>
         </div>
-        <div class="callout reveal no-bang">툴 실행 후 LLM을 한 번 더 부르면, 실행 결과를 보고 답변을 만들거나 다음 툴을 고릅니다. 이 반복이 곧 <span class="tag">피드백 루프</span>. 다음 챕터의 주제.</div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">07</span></footer>
-    </section>
+      </section>
 
-    <!-- 8: Wrap -->
-    <section class="slide" data-notes="다음 챕터에서는 OpenAI API의 tool_calls 파라미터로 같은 패턴을 더 안정적으로 구현. JSON 파싱 위험을 API 레벨에서 제거.">
-      <div class="eyebrow">Chapter 7 · 마무리</div>
-      <div class="frame">
-        <h2 class="reveal">JSON 방식은<br>됐다.<br><span class="gradient-title">API가 도와주면</span> 더 안정적.</h2>
-        <div class="callout reveal no-bang">OpenAI 호환 API에는 <span class="tag">tools</span> 파라미터가 있어, 툴 목록과 파라미터 스펙을 API에 직접 전달할 수 있습니다. JSON 파싱 위험 없이 같은 패턴을 더 깔끔하게.</div>
-        <p class="reveal" style="margin-top:32px;">
-          <a class="chapter-card" style="display:inline-block;max-width:380px;" href="./chapter-8.html">
-            <span class="num">CH 08 →</span>
-            <span class="ttl">피드백 루프 · Tool Calling</span>
-            <span class="desc">API 레벨 tool_calls와 ReAct 패턴.</span>
+      <!-- 7: JSON weakness -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">JSON 방식의 약점</div>
+
+          <h2 style="margin-bottom: 2.2rem;">
+            하지만<br>
+            LLM은 가끔 <em>어긋난다</em>.
+          </h2>
+
+          <div class="grid-2-tight stagger">
+            <div class="card">
+              <h4 style="color: var(--coral) !important;">파싱 실패</h4>
+              <p>코드펜스(<code>```json</code>)를 붙이거나 JSON 앞뒤에 설명을 다는 경우. <code>json.loads()</code>가 터진다.</p>
+            </div>
+            <div class="card">
+              <h4 style="color: var(--coral) !important;">한 번에 한 툴만</h4>
+              <p>한 호출에 결정이 하나. 툴 실행 결과를 보고 다음 툴을 부르려면 다시 호출해야 한다.</p>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top: 2rem;">
+            툴 실행 후 LLM을 한 번 더 부르면, 결과를 보고 답변을 만들거나 다음 툴을 고른다.<br>
+            이 반복이 곧 <strong>피드백 루프</strong>. 다음 챕터의 주제.
+          </div>
+        </div>
+      </section>
+
+      <!-- 8: Next -->
+      <section>
+        <div class="watermark">→</div>
+        <div class="slide-content center-y">
+          <div class="chip">Chapter 07 · 마무리</div>
+          <h2>
+            JSON 방식은 됐다.<br>
+            <em>API가 도와주면</em><br>
+            더 안정적.
+          </h2>
+          <p class="lead">
+            OpenAI 호환 API의 <code>tools</code> 파라미터로 같은 패턴을 더 깔끔하게.<br>
+            JSON 파싱 위험 없이.
+          </p>
+
+          <a class="next-strip" href="./chapter-8.html" style="margin-top: 3rem; max-width: 600px;">
+            <div>
+              <div class="meta">Next · Chapter 08</div>
+              <div class="title">피드백 루프 · <em>Tool Calling</em></div>
+            </div>
+            <div class="arrow">→</div>
           </a>
-        </p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-8.html">Next →</a></span><span class="num">08</span></footer>
-    </section>
+        </div>
+      </section>
 
-  </main>
+    </div>
+  </div>
 
-  <div class="progress"><span></span></div>
-  <div class="hint">← → 또는 Space · N: 노트 · P: 인쇄</div>
-  <div class="notes" aria-live="polite"></div>
-  <script src="./shared.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({ hash: true, controls: true, progress: true, center: false, transition: 'fade', slideNumber: 'c/t', width: 1440, height: 900, margin: 0.04 });
+  </script>
 </body>
 </html>

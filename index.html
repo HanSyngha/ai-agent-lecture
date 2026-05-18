@@ -3,211 +3,117 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GenAI Agent 강의 — 0에서 멀티 에이전트까지</title>
-  <meta name="description" content="LLM으로 Agent를 만드는 길. 환경 세팅부터 멀티 에이전트 오케스트레이션까지 10장의 코드 워크스루.">
-  <link rel="stylesheet" href="./shared.css">
+  <title>GenAI Agent — 0에서 멀티 에이전트까지</title>
+  <meta name="description" content="LLM 한 번의 호출에서 멀티 에이전트 오케스트레이션까지. 10장의 코드 워크스루.">
+  <link rel="stylesheet" href="./styles.css?v=7">
 </head>
 <body>
-  <canvas id="kinetic-bg" aria-hidden="true"></canvas>
-  <main class="deck" aria-live="polite">
 
-    <!-- 1: Hero -->
-    <section class="slide active" data-notes="강의 시작 슬라이드. 청중에게 '오늘 우리가 어디서 출발해서 어디까지 갈지'를 한 화면으로 보여줍니다. 챕터 카드는 다음 슬라이드에서 펼침.">
-      <div class="eyebrow">GenAI Agent · 10-Chapter Code Tour</div>
-      <div class="frame split">
-        <div>
-          <h1 class="reveal gradient-title">LLM을<br>Agent로<br>키우는 길.</h1>
-          <p class="lead reveal">코드 한 줄도 안 본 상태에서 시작해서, 10장 끝에는 LLM이 스스로 계획하고 도구를 골라 일을 끝내는 멀티 에이전트까지.</p>
-          <p class="small reveal" style="margin-top:18px;">← / → 또는 Space 로 이동 · N 으로 노트 토글 · P 로 인쇄</p>
-        </div>
-        <div class="hero-mark reveal" data-mark="AGT" aria-hidden="true">
-          <div class="orbit"></div>
-        </div>
+  <main class="hub">
+
+    <header class="hub-header">
+      <span>Syngha Han / Atelier</span>
+      <span>2026 · Lecture Deck</span>
+    </header>
+
+    <section class="hub-hero">
+      <h1>LLM을<br><em>Agent</em>로<br>키우는 길.</h1>
+      <p class="lede">
+        한 번의 LLM 호출에서 시작해, 매 장마다 직전의 한계를 깨면서 멀티 에이전트 오케스트레이션까지. 10장의 코드 워크스루.
+      </p>
+      <div class="hub-meta">
+        <span>10 chapters</span>
+        <span>~70 slides</span>
+        <span>Korean lecture</span>
       </div>
-      <footer><span>Syngha Han · ai-agent-lecture</span><span class="num">01</span></footer>
     </section>
 
-    <!-- 2: 강의의 약속 -->
-    <section class="slide" data-notes="이 강의가 '도구 사용법'이 아니라 'LLM이 사람의 일을 위임받는 흐름'을 가르치는 강의라는 톤을 잡습니다. 청중이 코드만 따라 치는 것이 아니라 왜 그렇게 진화하는지를 따라가도록.">
-      <div class="eyebrow">Why this deck</div>
-      <div class="frame">
-        <h2 class="reveal">툴 호출 한 번이<br><span class="gradient-title">에이전트가 되는 순간까지</span>,<br>그 사이의 모든 다리.</h2>
-        <div class="callout reveal no-bang">단순한 챗봇 → 시스템 프롬프트 → 멀티턴 → 툴 → 워크플로우 → 의사결정 → 피드백 루프 → 계획 → 멀티 에이전트. 매 챕터는 직전 챕터의 한계를 깨면서 다음으로 넘어갑니다.</div>
+    <section class="hub-curriculum">
+      <div class="hub-section-label">
+        Curriculum &nbsp;/&nbsp; 클릭해서 챕터 입장
       </div>
-      <footer><span>The promise</span><span class="num">02</span></footer>
+
+      <div class="hub-grid">
+
+        <a class="hub-card" data-chapter="1" data-num="01" href="./chapter-1.html">
+          <span class="num">Chapter 01</span>
+          <span class="ttl">환경 <em>셋업</em></span>
+          <span class="desc">파이썬 패키지와 8080 포트 정리. 강의 실습의 출발선을 만드는 가장 짧은 한 장.</span>
+          <span class="arrow">→</span>
+        </a>
+
+        <a class="hub-card" data-chapter="2" data-num="02" href="./chapter-2.html">
+          <span class="num">Chapter 02</span>
+          <span class="ttl">환경변수 <em>.env</em></span>
+          <span class="desc">매번 반복되는 키·URL·시스템명을 .env에 한 번만. 모든 노트북이 두 줄로 시작한다.</span>
+          <span class="arrow">→</span>
+        </a>
+
+        <a class="hub-card" data-chapter="3" data-num="03" href="./chapter-3.html">
+          <span class="num">Chapter 03</span>
+          <span class="ttl">시스템 프롬프트와 <em>페르소나</em></span>
+          <span class="desc">generate_response()의 뼈대, system vs user 우선순위, 스트리밍, 그리고 LLM에게 역할을 부여하기.</span>
+          <span class="arrow">→</span>
+        </a>
+
+        <a class="hub-card" data-chapter="4" data-num="04" href="./chapter-4.html">
+          <span class="num">Chapter 04</span>
+          <span class="ttl">멀티턴과 <em>대화 히스토리</em></span>
+          <span class="desc">LLM은 기억하지 않는다. 챗봇이 자연스럽게 보이는 건 우리가 매번 history를 통째로 다시 보내고 있기 때문.</span>
+          <span class="arrow">→</span>
+        </a>
+
+        <a class="hub-card" data-chapter="5" data-num="05" href="./chapter-5.html">
+          <span class="num">Chapter 05</span>
+          <span class="ttl">툴, LLM의 <em>손과 발</em></span>
+          <span class="desc">DB·RAG·위키·엑셀·메일. LLM 혼자선 못 하는 다섯 가지를, 그냥 평범한 파이썬 함수로.</span>
+          <span class="arrow">→</span>
+        </a>
+
+        <a class="hub-card" data-chapter="6" data-num="06" href="./chapter-6.html">
+          <span class="num">Chapter 06</span>
+          <span class="ttl">고정 <em>워크플로우</em></span>
+          <span class="desc">툴 → 툴 → 툴. 한 시나리오는 완벽하다. 그리고 시나리오가 바뀌면 다시 짜야 한다.</span>
+          <span class="arrow">→</span>
+        </a>
+
+        <a class="hub-card" data-chapter="7" data-num="07" href="./chapter-7.html">
+          <span class="num">Chapter 07</span>
+          <span class="ttl">Decision, <em>자율 툴 선택</em></span>
+          <span class="desc">결정 권한이 처음으로 LLM에게. 툴 목록을 시스템 프롬프트에 적고 JSON으로 답을 받는다.</span>
+          <span class="arrow">→</span>
+        </a>
+
+        <a class="hub-card" data-chapter="8" data-num="08" href="./chapter-8.html">
+          <span class="num">Chapter 08</span>
+          <span class="ttl">피드백 루프, <em>Tool Calling</em></span>
+          <span class="desc">API가 직접 지원하는 tool_calls. 생각 → 행동 → 관찰의 ReAct 패턴이 한 루프 안에서 돈다.</span>
+          <span class="arrow">→</span>
+        </a>
+
+        <a class="hub-card" data-chapter="9" data-num="09" href="./chapter-9.html">
+          <span class="num">Chapter 09</span>
+          <span class="ttl"><em>Planning</em></span>
+          <span class="desc">실행 전에 전체 청사진을 먼저. 매 스텝 결정의 비용을 한 번에 정리한다.</span>
+          <span class="arrow">→</span>
+        </a>
+
+        <a class="hub-card" data-chapter="10" data-num="10" href="./chapter-10.html">
+          <span class="num">Chapter 10</span>
+          <span class="ttl">멀티 <em>에이전트</em></span>
+          <span class="desc">하나의 거대한 LLM이 아니라, 역할별 작은 에이전트들의 협업. 오케스트레이터가 조율한다.</span>
+          <span class="arrow">→</span>
+        </a>
+
+      </div>
     </section>
 
-    <!-- 3: 학습 곡선 -->
-    <section class="slide" data-notes="청중이 '오늘 우리가 어디쯤 가있는지' 위치를 잡을 수 있게 단계별 추상화 상승을 그림으로 보여줍니다. 매 챕터마다 '직전 챕터의 무엇이 부족했나'를 묻는 식으로 진행한다는 메타 메시지.">
-      <div class="eyebrow">학습 곡선</div>
-      <div class="frame">
-        <h2 class="reveal">매 챕터는 <span class="gradient-title">직전의 한계</span>를 깨는 자리.</h2>
-        <div class="diagram reveal">
-          <div class="flow">
-            <div class="flow-row evenly">
-              <div class="node user">LLM 한 번 호출<br><small>Chapter 3</small></div>
-              <div class="arrow">→</div>
-              <div class="node user">대화 기억<br><small>Chapter 4</small></div>
-              <div class="arrow">→</div>
-              <div class="node tool">툴 연결<br><small>Chapter 5</small></div>
-              <div class="arrow">→</div>
-              <div class="node tool">툴 워크플로우<br><small>Chapter 6</small></div>
-            </div>
-            <div class="flow-row evenly">
-              <div class="node llm">LLM이 툴 선택<br><small>Chapter 7</small></div>
-              <div class="arrow">→</div>
-              <div class="node llm">피드백 루프<br><small>Chapter 8</small></div>
-              <div class="arrow">→</div>
-              <div class="node llm">계획 후 실행<br><small>Chapter 9</small></div>
-              <div class="arrow">→</div>
-              <div class="node llm">멀티 에이전트<br><small>Chapter 10</small></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <footer><span>From call to agent</span><span class="num">03</span></footer>
-    </section>
-
-    <!-- 4: Chapter index -->
-    <section class="slide" data-notes="각 카드를 클릭하면 해당 챕터 deck로 이동합니다. 강의 진행 중에는 이 페이지를 hub로 쓰면서 점프할 수 있습니다.">
-      <div class="eyebrow">Chapter Index · 클릭해서 이동</div>
-      <div class="frame">
-        <div class="chapter-grid">
-          <a class="chapter-card" href="./chapter-1.html">
-            <span class="num">CH 01</span>
-            <span class="ttl">환경 셋업</span>
-            <span class="desc">파이썬 패키지, 기존 웹앱 종료. 강의 실습 환경의 출발선.</span>
-          </a>
-          <a class="chapter-card" href="./chapter-2.html">
-            <span class="num">CH 02</span>
-            <span class="ttl">환경변수 .env</span>
-            <span class="desc">매번 반복되는 키·URL·시스템명을 .env로 한 번만. 클라이언트 만들 준비.</span>
-          </a>
-          <a class="chapter-card" href="./chapter-3.html">
-            <span class="num">CH 03</span>
-            <span class="ttl">시스템 프롬프트 & 페르소나</span>
-            <span class="desc">generate_response()의 뼈대, system vs user, 스트리밍, 역할 부여.</span>
-          </a>
-          <a class="chapter-card" href="./chapter-4.html">
-            <span class="num">CH 04</span>
-            <span class="ttl">멀티턴 & 히스토리</span>
-            <span class="desc">LLM이 이전 대화를 기억하지 못하는 이유와 history 리스트의 역할.</span>
-          </a>
-          <a class="chapter-card" href="./chapter-5.html">
-            <span class="num">CH 05</span>
-            <span class="ttl">툴 정의와 개별 사용</span>
-            <span class="desc">DB, RAG, 위키, 엑셀, 메일 — LLM의 손과 발을 하나씩 직접 호출.</span>
-          </a>
-          <a class="chapter-card" href="./chapter-6.html">
-            <span class="num">CH 06</span>
-            <span class="ttl">고정 워크플로우</span>
-            <span class="desc">툴 → 툴 → 툴. 코드로 순서를 박아두면 한 시나리오만 잘 돈다.</span>
-          </a>
-          <a class="chapter-card" href="./chapter-7.html">
-            <span class="num">CH 07</span>
-            <span class="ttl">Decision · 자율 툴 선택</span>
-            <span class="desc">시스템 프롬프트로 툴 목록을 알려주고, JSON으로 무엇을 호출할지 답하게 한다.</span>
-          </a>
-          <a class="chapter-card" href="./chapter-8.html">
-            <span class="num">CH 08</span>
-            <span class="ttl">피드백 루프 · Tool Calling</span>
-            <span class="desc">API 레벨 tool_calls와 ReAct(생각·행동·관찰)의 자동 반복.</span>
-          </a>
-          <a class="chapter-card" href="./chapter-9.html">
-            <span class="num">CH 09</span>
-            <span class="ttl">Planning</span>
-            <span class="desc">실행 전에 전체 계획을 먼저 짠다. 그리고 계획대로만 움직인다.</span>
-          </a>
-          <a class="chapter-card" href="./chapter-10.html">
-            <span class="num">CH 10</span>
-            <span class="ttl">멀티 에이전트</span>
-            <span class="desc">오케스트레이터가 역할별 에이전트를 호출. 하나의 LLM이 모든 걸 짊어지지 않는다.</span>
-          </a>
-        </div>
-      </div>
-      <footer><span>10 chapters · ~70 slides</span><span class="num">04</span></footer>
-    </section>
-
-    <!-- 5: Mental model -->
-    <section class="slide" data-notes="강의의 가장 큰 메타-개념. 'Agent = LLM + 손과 발 + 결정 권한'. 손은 툴, 결정 권한은 피드백 루프와 플래닝에서 점점 LLM에게 넘어갑니다.">
-      <div class="eyebrow">Mental Model</div>
-      <div class="frame split">
-        <div>
-          <h2 class="reveal">Agent =<br><span class="gradient-title">LLM</span> +<br>손·발(툴) +<br>결정 권한.</h2>
-          <p class="lead reveal">초반엔 사람이 결정하고 코드가 묶어줍니다. 후반엔 결정 권한이 LLM에게로 넘어갑니다. 그 이전(transfer)이 곧 이 강의의 줄거리.</p>
-        </div>
-        <div class="diagram reveal">
-          <div class="flow">
-            <div class="flow-row" style="justify-content:center;">
-              <div class="node llm" style="min-width:160px;">LLM (두뇌)</div>
-            </div>
-            <div class="arrow down">↕</div>
-            <div class="flow-row evenly">
-              <div class="node tool">DB</div>
-              <div class="node tool">RAG</div>
-              <div class="node tool">위키</div>
-              <div class="node tool">Excel</div>
-              <div class="node tool">Email</div>
-            </div>
-            <div class="arrow down">↓</div>
-            <div class="flow-row" style="justify-content:center;">
-              <div class="node user" style="min-width:200px;">사람의 일이 끝남</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <footer><span>The whole picture</span><span class="num">05</span></footer>
-    </section>
-
-    <!-- 6: Operator notes -->
-    <section class="slide" data-notes="강의 운영 안내. 청중에게 keyboard shortcut 알려주는 슬라이드. 챕터별로 deck이 분리되어 있고 이 페이지가 hub라는 점.">
-      <div class="eyebrow">How to drive the deck</div>
-      <div class="frame">
-        <h2 class="reveal">조작은 3개만<br>기억하면 됩니다.</h2>
-        <div class="cards reveal">
-          <div class="card">
-            <strong>← / →</strong>
-            <p>이전 / 다음 슬라이드. Space는 다음과 같음. 모바일은 좌우 스와이프.</p>
-          </div>
-          <div class="card">
-            <strong>N</strong>
-            <p>강사 노트 토글. 청중에게는 안 보이는 톤·운영 메모.</p>
-          </div>
-          <div class="card">
-            <strong>P</strong>
-            <p>인쇄 모드. 챕터별 deck을 PDF로도 내보낼 수 있게.</p>
-          </div>
-        </div>
-      </div>
-      <footer><span>Hub · ai-agent-lecture</span><span class="num">06</span></footer>
-    </section>
-
-    <!-- 7: CTA -->
-    <section class="slide" data-notes="첫 챕터로 진입. 강의 톤을 잡고 코드 워크스루로 들어갑니다.">
-      <div class="eyebrow">Start here</div>
-      <div class="frame">
-        <h2 class="reveal">그럼 <span class="gradient-title">Chapter 1</span>부터,<br>환경을 깔아봅시다.</h2>
-        <p class="lead reveal">실습 환경 세팅 → 환경변수 → 첫 LLM 호출 → 대화 → 툴 → 워크플로우 → 자율성 → 계획 → 협업. 한 호흡으로.</p>
-        <p class="reveal" style="margin-top:32px;">
-          <a class="chapter-card" style="display:inline-block;max-width:380px;" href="./chapter-1.html">
-            <span class="num">CH 01 →</span>
-            <span class="ttl">환경 셋업</span>
-            <span class="desc">파이썬 패키지 설치와 8080 포트 정리.</span>
-          </a>
-        </p>
-      </div>
-      <footer>
-        <span><a href="https://github.com/HanSyngha/ai-agent-lecture" target="_blank" rel="noopener">github.com/HanSyngha/ai-agent-lecture</a></span>
-        <span class="num">07</span>
-      </footer>
-    </section>
+    <footer class="hub-footer">
+      <span>← / → · Space · N · P &nbsp;/&nbsp; 챕터마다 동일 단축키</span>
+      <span><a href="https://github.com/HanSyngha/ai-agent-lecture" target="_blank" rel="noopener">github.com/HanSyngha/ai-agent-lecture</a></span>
+    </footer>
 
   </main>
 
-  <div class="progress"><span></span></div>
-  <div class="hint">← → 또는 Space · N: 노트 · P: 인쇄</div>
-  <div class="notes" aria-live="polite"></div>
-
-  <script src="./shared.js"></script>
 </body>
 </html>

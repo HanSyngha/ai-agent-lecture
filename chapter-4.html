@@ -3,57 +3,81 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chapter 4 · 멀티턴 & 대화 히스토리 — GenAI Agent</title>
-  <link rel="stylesheet" href="./shared.css">
+  <title>Ch.04 · 멀티턴과 대화 히스토리 — GenAI Agent</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="./styles.css?v=7">
 </head>
-<body>
-  <canvas id="kinetic-bg" aria-hidden="true"></canvas>
-  <main class="deck" aria-live="polite">
+<body data-chapter="4">
 
-    <!-- 1: Title -->
-    <section class="slide active" data-notes="이 챕터의 핵심 한 문장: 'LLM은 stateless다. 기억은 우리가 매번 다시 보내야 한다.' 챗봇이 자연스럽게 보이는 비결은 사실 client가 history를 누적해서 매번 통째로 보내고 있기 때문.">
-      <div class="eyebrow">Chapter 04 · Multi-turn</div>
-      <div class="frame split">
-        <div>
-          <h1 class="reveal gradient-title">LLM은<br>기억하지<br>않는다.</h1>
-          <p class="lead reveal">매 호출은 독립적. 챗봇이 어제 한 말을 기억하는 것처럼 보이는 건, client가 매번 과거 대화를 통째로 다시 보내고 있기 때문입니다.</p>
-        </div>
-        <div class="hero-mark reveal" data-mark="MEM" aria-hidden="true">
-          <div class="orbit"></div>
-        </div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-3.html">Prev</a></span><span class="num">01</span></footer>
-    </section>
+  <div class="atelier-toolbar">
+    <a href="./index.html">← Hub</a>
+    <a href="./chapter-3.html">← 03</a>
+    <a href="./chapter-5.html">05 →</a>
+  </div>
 
-    <!-- 2: 문제 -->
-    <section class="slide" data-notes="현장에서 보여줄 가장 직관적인 예시. 1턴에 이력서 → 2턴에 채용공고 → 3턴에 '아까 준 거 기억나?' → '모릅니다'.">
-      <div class="eyebrow">현상 시연</div>
-      <div class="frame">
-        <h2 class="reveal">매 턴이 <span class="gradient-title">남남</span>.</h2>
-        <div class="diagram reveal">
-          <div class="dialogue">
-            <div class="bubble"><b>1턴 USER</b><span>이 이력서 평가해줘 [이력서 첨부]</span></div>
-            <div class="bubble ai"><b>1턴 LLM</b><span>채용공고가 없어서 평가가 어렵습니다.</span></div>
-            <div class="bubble"><b>2턴 USER</b><span>채용공고 기준으로 평가해줘 [공고 첨부]</span></div>
-            <div class="bubble ai"><b>2턴 LLM</b><span>이력서가 없어 평가가 어렵습니다.</span></div>
-            <div class="bubble"><b>3턴 USER</b><span>내가 1턴에 이력서, 2턴에 공고 줬잖아!</span></div>
-            <div class="bubble ai"><b>3턴 LLM</b><span>이전 대화 기록이 없어 확인이 불가합니다.</span></div>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- 1: Title -->
+      <section>
+        <div class="watermark">04</div>
+        <div class="slide-content center-y">
+          <div class="chip">Chapter 04 · Multi-turn</div>
+          <h1>
+            LLM은<br>
+            <em>기억하지</em><br>
+            않는다.
+          </h1>
+          <p class="lead" style="margin-top: 2rem;">
+            매 호출은 독립적.<br>
+            챗봇이 어제를 기억하는 것처럼 보이는 건,<br>
+            client가 매번 history를 통째로 다시 보내고 있기 때문.
+          </p>
+        </div>
+      </section>
+
+      <!-- 2: Problem -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">현상 시연</div>
+
+          <h2 style="margin-bottom: 2rem;">
+            매 턴이 <em>남남</em>.
+          </h2>
+
+          <div class="chat" style="margin: 0 auto;">
+            <div class="bubble user"><span class="who">1턴 USER</span>이 이력서 평가해줘 [이력서 첨부]</div>
+            <div class="bubble ai"><span class="who">1턴 LLM</span>채용공고가 없어 평가가 어렵습니다.</div>
+            <div class="bubble user"><span class="who">2턴 USER</span>채용공고 기준으로 평가해줘 [공고 첨부]</div>
+            <div class="bubble ai"><span class="who">2턴 LLM</span>이력서가 없어 평가가 어렵습니다.</div>
+            <div class="bubble user"><span class="who">3턴 USER</span>내가 1턴에 이력서, 2턴에 공고 줬잖아!</div>
+            <div class="bubble ai"><span class="who">3턴 LLM</span>이전 대화 기록이 없어 확인이 불가합니다.</div>
           </div>
         </div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">02</span></footer>
-    </section>
+      </section>
 
-    <!-- 3: history 구조 -->
-    <section class="slide" data-notes="history는 그냥 list of dict. role과 content만 있으면 됨. 누가 무슨 말을 했는지 시간 순서대로 쌓아두기.">
-      <div class="eyebrow">Mental model</div>
-      <div class="frame split">
-        <div>
-          <h2 class="reveal">history는<br>그냥 <span class="gradient-title">list</span>.</h2>
-          <p class="lead reveal">매 턴이 끝날 때마다 user 메시지 1개 + assistant 메시지 1개를 list에 append. 다음 호출 때 이 list를 messages 배열에 통째로 끼워 보냅니다.</p>
-        </div>
-        <div>
-          <div class="code reveal">history = [
+      <!-- 3: History as list -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Mental Model</div>
+
+          <div class="grid-2-wide">
+            <div>
+              <h2>
+                history는<br>
+                그냥 <em>list</em>.
+              </h2>
+              <p class="lead" style="margin-top: 1.4rem;">
+                매 턴이 끝날 때마다<br>
+                user 메시지 1개 + assistant 메시지 1개를 append.<br>
+                다음 호출 때 list를 messages에 통째로 끼워 보낸다.
+              </p>
+            </div>
+
+<pre class="code" data-lang="python">history = [
     {<span class="s">"role"</span>: <span class="s">"user"</span>,
      <span class="s">"content"</span>: <span class="s">"이력서 평가해줘 ..."</span>},
     {<span class="s">"role"</span>: <span class="s">"assistant"</span>,
@@ -63,114 +87,157 @@
     {<span class="s">"role"</span>: <span class="s">"assistant"</span>,
      <span class="s">"content"</span>: <span class="s">"평가 결과는 ..."</span>},
     <span class="c"># ... 계속 append</span>
-]</div>
+]</pre>
+          </div>
         </div>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">03</span></footer>
-    </section>
+      </section>
 
-    <!-- 4: 함수 코드 -->
-    <section class="slide" data-notes="generate_response_with_history. 시그니처에 history 받기. messages = system + history + new user. 호출 후 호출자가 history.append().">
-      <div class="eyebrow">Code · history 받는 함수</div>
-      <div class="frame">
-        <h2 class="reveal">함수 시그니처에<br><span class="gradient-title">history</span> 한 줄 추가.</h2>
-        <div class="code reveal"><span class="k">def</span> <span class="fn">generate_response_with_history</span>(user_prompt, <span class="hl">history</span>):
+      <!-- 4: Function -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Code · history 받는 함수</div>
+
+          <h2>
+            함수 시그니처에<br>
+            <em>history</em> 한 줄.
+          </h2>
+
+<pre class="code" data-lang="python" style="margin-top: 1.8rem;"><span class="k">def</span> <span class="fn">generate_response_with_history</span>(user_prompt, <span class="em">history</span>):
     messages = [{<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: system_prompt}]
-    <span class="hl">messages.extend(history)</span>                                <span class="c"># 과거 대화</span>
+    <span class="em">messages.extend(history)</span>                                <span class="c"># 과거 대화</span>
     messages.extend([{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_prompt}])  <span class="c"># 이번 턴</span>
 
     response = client.chat.completions.<span class="fn">create</span>(
-        model=os.getenv(<span class="s">"model"</span>),
+        model=os.<span class="fn">getenv</span>(<span class="s">"model"</span>),
         messages=messages,
         stream=<span class="n">True</span>,
     )
+    <span class="k">return</span> <span class="s">""</span>.join(c.choices[<span class="n">0</span>].delta.content
+                    <span class="k">for</span> c <span class="k">in</span> response <span class="k">if</span> c.choices)
 
-    chunks = (c.choices[<span class="n">0</span>].delta.content <span class="k">for</span> c <span class="k">in</span> response <span class="k">if</span> c.choices)
-    parts = [<span class="fn">print</span>(d, end=<span class="s">""</span>, flush=<span class="n">True</span>) <span class="k">or</span> d <span class="k">for</span> d <span class="k">in</span> chunks <span class="k">if</span> d]
-    <span class="k">return</span> <span class="s">""</span>.join(parts)
+history = []   <span class="c"># 시작은 빈 리스트</span></pre>
 
-history = []   <span class="c"># 시작은 빈 리스트</span></div>
-        <p class="small reveal">변한 곳은 messages 조립 부분뿐. <span class="tag">system</span> + <span class="tag">history(N개)</span> + <span class="tag">이번 user</span> 순서.</p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">04</span></footer>
-    </section>
+          <p class="small" style="margin-top: 1.2rem;">
+            변한 건 messages 조립 부분뿐. <code>system + history(N) + 이번 user</code> 순서.
+          </p>
+        </div>
+      </section>
 
-    <!-- 5: 누적 패턴 -->
-    <section class="slide" data-notes="턴이 끝날 때마다 user/assistant 2개를 append. 이 패턴이 깨지면 history 정합성이 망가집니다.">
-      <div class="eyebrow">Code · 매 턴의 마무리</div>
-      <div class="frame">
-        <h2 class="reveal">매 턴 끝에<br><span class="gradient-title">두 줄</span> 추가.</h2>
-        <div class="code reveal"><span class="c"># 1턴</span>
+      <!-- 5: append pattern -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">Code · 매 턴의 마무리</div>
+
+          <h2>
+            매 턴 끝에<br>
+            <em>두 줄</em> 추가.
+          </h2>
+
+<pre class="code" data-lang="python" style="margin-top: 1.6rem;"><span class="c"># 1턴</span>
 user_prompt_1 = <span class="s">f"이력서 평가해줘 [이력서]{resume}"</span>
 response_1 = <span class="fn">generate_response_with_history</span>(user_prompt_1, history)
 
-<span class="hl">history.append({<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_prompt_1})</span>
-<span class="hl">history.append({<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: response_1})</span>
+<span class="em">history.append({<span class="s">"role"</span>: <span class="s">"user"</span>,      <span class="s">"content"</span>: user_prompt_1})</span>
+<span class="em">history.append({<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: response_1})</span>
 
-<span class="c"># 2턴 — history엔 이미 1턴 내용이 들어있음</span>
+<span class="c"># 2턴 — history엔 이미 1턴 내용이 들어 있음</span>
 user_prompt_2 = <span class="s">f"공고로 평가 [공고]{jp}"</span>
 response_2 = <span class="fn">generate_response_with_history</span>(user_prompt_2, history)
 
-<span class="hl">history.append({<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_prompt_2})</span>
-<span class="hl">history.append({<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: response_2})</span></div>
-        <p class="small reveal">user/assistant 짝을 맞춰서 append. assistant 응답을 빼먹으면 LLM이 자기 답을 못 보고 다음 턴을 만듭니다.</p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">05</span></footer>
-    </section>
+<span class="em">history.append({<span class="s">"role"</span>: <span class="s">"user"</span>,      <span class="s">"content"</span>: user_prompt_2})</span>
+<span class="em">history.append({<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: response_2})</span></pre>
 
-    <!-- 6: 누적 다이어그램 -->
-    <section class="slide" data-notes="N턴째에 LLM이 받는 입력의 모양을 그림으로. 매 호출마다 전체가 다시 가는 구조. 그래서 토큰이 빨리 누적됩니다.">
-      <div class="eyebrow">N턴째에 LLM이 받는 것</div>
-      <div class="frame">
-        <h2 class="reveal">매 호출에<br><span class="gradient-title">처음부터 끝까지</span> 다시.</h2>
-        <div class="diagram reveal">
-          <div class="flow">
-            <div class="flow-row evenly">
-              <div class="node user">system<br><small>역할/규칙</small></div>
-              <div class="arrow">+</div>
-              <div class="node">user #1</div>
-              <div class="arrow">+</div>
-              <div class="node llm">assistant #1</div>
-              <div class="arrow">+</div>
-              <div class="node">user #2</div>
-              <div class="arrow">+</div>
-              <div class="node llm">assistant #2</div>
-              <div class="arrow">+</div>
-              <div class="node" style="border-color:rgba(223,251,82,0.6);background:rgba(223,251,82,0.12);color:var(--deep);">user #N<br><small>이번 턴</small></div>
-            </div>
-            <div class="arrow down">↓</div>
-            <div class="flow-row" style="justify-content:center;">
-              <div class="node llm" style="min-width:240px;">LLM → assistant #N</div>
-            </div>
-          </div>
+          <p class="small" style="margin-top: 1.2rem;">
+            user/assistant 짝을 맞춰 append. assistant 응답을 빼먹으면 LLM이 자기 답을 못 본다.
+          </p>
         </div>
-        <p class="small reveal">대화가 길어지면 매 호출 비용·지연도 같이 늘어납니다. 그래서 후반 챕터에 등장하는 패턴: <span class="tag">summarize</span> / <span class="tag">trim</span> / <span class="tag">context window 관리</span>.</p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a></span><span class="num">06</span></footer>
-    </section>
+      </section>
 
-    <!-- 7: Wrap -->
-    <section class="slide" data-notes="이제 챗봇이 됐다. 하지만 여전히 텍스트만 주고받음. DB 조회, 파일 저장 같은 '진짜 일'은 아직 못함.">
-      <div class="eyebrow">Chapter 4 · 마무리</div>
-      <div class="frame">
-        <h2 class="reveal">기억은 됐다.<br>이제 LLM에게<br><span class="gradient-title">손과 발</span>이 필요하다.</h2>
-        <div class="callout reveal no-bang">대화를 기억하는 LLM = 챗봇. 하지만 DB 조회, 파일 저장, 메일 발송 같은 '실제 행동'은 아직 못 합니다. Chapter 5에서 그 손과 발 = '툴'을 직접 정의합니다.</div>
-        <p class="reveal" style="margin-top:32px;">
-          <a class="chapter-card" style="display:inline-block;max-width:380px;" href="./chapter-5.html">
-            <span class="num">CH 05 →</span>
-            <span class="ttl">툴 정의와 개별 사용</span>
-            <span class="desc">DB·RAG·위키·엑셀·메일. LLM이 직접 못 하는 5가지를 함수로.</span>
+      <!-- 6: What LLM receives — diagram -->
+      <section>
+        <div class="watermark">·</div>
+        <div class="slide-content">
+          <div class="chip">N턴째에 LLM이 받는 것</div>
+
+          <h2 style="margin-bottom: 2rem;">
+            매 호출에<br>
+            <em>처음부터 끝까지</em> 다시.
+          </h2>
+
+          <div class="diagram">
+            <svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg">
+              <!-- top row: system + history -->
+              <g class="fade-in">
+                <rect class="node-bg user" x="20"  y="60" rx="8" width="110" height="50"/>
+                <rect class="node-bg"      x="160" y="60" rx="8" width="110" height="50"/>
+                <rect class="node-bg llm"  x="300" y="60" rx="8" width="130" height="50"/>
+                <rect class="node-bg"      x="460" y="60" rx="8" width="110" height="50"/>
+                <rect class="node-bg llm"  x="600" y="60" rx="8" width="130" height="50"/>
+                <rect class="node-bg"      x="760" y="60" rx="8" width="120" height="50" style="stroke: var(--accent); stroke-width: 2;"/>
+              </g>
+              <g class="fade-in">
+                <text x="75"  y="90" text-anchor="middle">system</text>
+                <text x="215" y="90" text-anchor="middle">user #1</text>
+                <text x="365" y="90" text-anchor="middle">assistant #1</text>
+                <text x="515" y="90" text-anchor="middle">user #2</text>
+                <text x="665" y="90" text-anchor="middle">assistant #2</text>
+                <text x="820" y="86" text-anchor="middle" style="fill: var(--accent); font-weight: 600;">user #N</text>
+                <text x="820" y="103" text-anchor="middle" class="label" style="fill: var(--accent);">이번 턴</text>
+              </g>
+              <!-- arrow down -->
+              <g class="draw">
+                <path class="edge accent" d="M450 130 L450 175" stroke-width="2"/>
+              </g>
+              <g class="fade-in">
+                <polygon class="arrow-head accent" points="445,175 455,175 450,185"/>
+              </g>
+              <!-- result -->
+              <g class="fade-in">
+                <rect class="node-bg llm" x="330" y="195" rx="8" width="240" height="50" style="stroke-width: 2;"/>
+                <text x="450" y="225" text-anchor="middle" class="serif">→ assistant #N</text>
+              </g>
+            </svg>
+          </div>
+
+          <p class="small" style="margin-top: 1.2rem;">
+            대화가 길어지면 매 호출 비용·지연도 같이 늘어난다.<br>
+            후반 챕터의 패턴: <code>summarize</code> · <code>trim</code> · 컨텍스트 윈도우 관리.
+          </p>
+        </div>
+      </section>
+
+      <!-- 7: Next -->
+      <section>
+        <div class="watermark">→</div>
+        <div class="slide-content center-y">
+          <div class="chip">Chapter 04 · 마무리</div>
+          <h2>
+            기억은 됐다.<br>
+            이제 LLM에게<br>
+            <em>손과 발</em>이 필요하다.
+          </h2>
+          <p class="lead">
+            기억하는 LLM = 챗봇. 하지만 DB 조회, 파일 저장, 메일 발송은 여전히 못 한다.
+          </p>
+
+          <a class="next-strip" href="./chapter-5.html" style="margin-top: 3rem; max-width: 600px;">
+            <div>
+              <div class="meta">Next · Chapter 05</div>
+              <div class="title">툴, LLM의 <em>손과 발</em></div>
+            </div>
+            <div class="arrow">→</div>
           </a>
-        </p>
-      </div>
-      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-5.html">Next →</a></span><span class="num">07</span></footer>
-    </section>
+        </div>
+      </section>
 
-  </main>
+    </div>
+  </div>
 
-  <div class="progress"><span></span></div>
-  <div class="hint">← → 또는 Space · N: 노트 · P: 인쇄</div>
-  <div class="notes" aria-live="polite"></div>
-  <script src="./shared.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({ hash: true, controls: true, progress: true, center: false, transition: 'fade', slideNumber: 'c/t', width: 1440, height: 900, margin: 0.04 });
+  </script>
 </body>
 </html>
