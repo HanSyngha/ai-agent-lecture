@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 8 · 피드백 루프 · Tool Calling — GenAI Agent</title>
+  <link rel="stylesheet" href="./shared.css">
+</head>
+<body>
+  <canvas id="kinetic-bg" aria-hidden="true"></canvas>
+  <main class="deck" aria-live="polite">
+
+    <!-- 1: Title -->
+    <section class="slide active" data-notes="이 챕터의 핵심: tool_calls는 API가 보장하는 구조. 더 이상 JSON 파싱 위험이 없음. 그리고 ReAct로 표현되는 '생각→행동→관찰' 패턴.">
+      <div class="eyebrow">Chapter 08 · Tool Calling</div>
+      <div class="frame split">
+        <div>
+          <h1 class="reveal gradient-title">생각하고,<br>행동하고,<br>관찰한다.</h1>
+          <p class="lead reveal">Chapter 7의 JSON 패턴을 API가 직접 지원합니다. <span class="tag">tools</span> 파라미터로 툴 스펙을 전달하면 LLM은 별도 필드로 호출 결정을 돌려줍니다. 그리고 그 반복이 ReAct.</p>
+        </div>
+        <div class="hero-mark reveal" data-mark="◯→" aria-hidden="true">
+          <div class="orbit"></div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-7.html">Prev</a></span><span class="num">01</span></footer>
+    </section>
+
+    <!-- 2: 피드백 루프 -->
+    <section class="slide" data-notes="피드백 루프 정의. 실행 결과를 보고 다음 행동을 결정하는 반복. 인간이 무의식적으로 하는 것을 코드로.">
+      <div class="eyebrow">정의</div>
+      <div class="frame">
+        <h2 class="reveal">실행 결과를 보고<br><span class="gradient-title">다음을 정한다</span>.<br>반복.</h2>
+        <div class="diagram reveal">
+          <div class="flow">
+            <div class="flow-row" style="justify-content:center;">
+              <div class="node user">사용자 요청</div>
+            </div>
+            <div class="arrow down">↓</div>
+            <div class="flow-row" style="justify-content:center;">
+              <div class="node llm" style="min-width:200px;">LLM<br><small>툴 선택</small></div>
+            </div>
+            <div class="arrow down">↓</div>
+            <div class="flow-row" style="justify-content:center;">
+              <div class="node tool" style="min-width:200px;">툴 실행</div>
+            </div>
+            <div class="arrow down">↓</div>
+            <div class="flow-row" style="justify-content:center;">
+              <div class="node llm" style="min-width:280px;">LLM 재호출<br><small>결과 보고 답변 or 다음 툴</small></div>
+            </div>
+            <div class="flow-row" style="justify-content:center;">
+              <div class="arrow label">반복 ↺</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">02</span></footer>
+    </section>
+
+    <!-- 3: JSON vs Tool Calling 비교 -->
+    <section class="slide" data-notes="Chapter 7과의 차이. 형식 보장, role:tool, tool_call_id 매핑 등이 API 레벨에서 자동.">
+      <div class="eyebrow">JSON 방식 vs Tool Calling</div>
+      <div class="frame">
+        <h2 class="reveal">파싱 위험을<br><span class="gradient-title">API</span>가 책임진다.</h2>
+        <div class="matrix three-col reveal">
+          <div class="head">구분</div><div class="head">Chapter 7 JSON</div><div class="head">Chapter 8 Tool Calling</div>
+          <div>툴 목록 전달</div><div>시스템 프롬프트 텍스트</div><div class="good">API에 파라미터로</div>
+          <div>툴 선택 결과</div><div>JSON 텍스트</div><div class="good">별도 필드(tool_calls)</div>
+          <div>파싱</div><div class="bad">json.loads() 실패 가능</div><div class="good">불필요, 안정적</div>
+          <div>결과 저장</div><div>user/assistant role</div><div class="good">role=tool + tool_call_id</div>
+          <div>병렬 호출</div><div class="bad">한 호출에 한 툴</div><div class="good">여러 툴 동시 가능</div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">03</span></footer>
+    </section>
+
+    <!-- 4: 툴 스펙 -->
+    <section class="slide" data-notes="툴 스펙 정의. description이 LLM의 선택 근거. 좋은 description = 좋은 자동 선택. 정확히 어떤 상황에서 부르는지 적습니다.">
+      <div class="eyebrow">Code · 툴 스펙 형식</div>
+      <div class="frame">
+        <h2 class="reveal">툴 스펙은<br>API가 읽는 <span class="gradient-title">계약서</span>.</h2>
+        <div class="code reveal">tools = [
+    {
+        <span class="s">"type"</span>: <span class="s">"function"</span>,
+        <span class="s">"function"</span>: {
+            <span class="s">"name"</span>: <span class="s">"execute_sql"</span>,
+            <span class="hl"><span class="s">"description"</span>: <span class="s">"DB에서 이력서 또는 채용공고 조회. </span></span>
+<span class="hl"><span class="s">                            ID/부서명 등 조건이 명확할 때 사용"</span></span>,
+            <span class="s">"parameters"</span>: {
+                <span class="s">"type"</span>: <span class="s">"object"</span>,
+                <span class="s">"properties"</span>: {
+                    <span class="s">"sql_query"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>, <span class="s">"description"</span>: <span class="s">"실행할 SQL"</span>}
+                },
+                <span class="s">"required"</span>: [<span class="s">"sql_query"</span>],
+            },
+        },
+    },
+    <span class="c"># ... retrieve_from_rag, get_confluence_page_content, save_excel, send_email</span>
+]</div>
+        <p class="small reveal">LLM은 <span class="tag">description</span>만 보고 어떤 툴을 부를지 판단합니다. 모호하면 잘못 부릅니다 — 좋은 description이 곧 좋은 디스패치.</p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">04</span></footer>
+    </section>
+
+    <!-- 5: ReAct -->
+    <section class="slide" data-notes="ReAct = Reason + Act. 생각·행동·관찰의 무한 반복. 사람의 문제해결 과정을 그대로 흉내. message.reasoning은 LLM의 내부 생각을 노출하는 필드.">
+      <div class="eyebrow">ReAct Pattern</div>
+      <div class="frame">
+        <h2 class="reveal">💭 생각 →<br>⚡ 행동 →<br>👀 관찰. <span class="gradient-title">반복</span>.</h2>
+        <div class="cards reveal">
+          <div class="card">
+            <strong>💭 Reasoning</strong>
+            <p>LLM의 내부 생각.<br><span class="tag">message.reasoning</span> 필드로 노출됨. reasoning 모델에서만 의미 있음.</p>
+          </div>
+          <div class="card">
+            <strong>⚡ Acting</strong>
+            <p>툴 호출 결정.<br><span class="tag">message.tool_calls</span>에 함수 이름과 파라미터가 담겨 있음.</p>
+          </div>
+          <div class="card">
+            <strong>👀 Observing</strong>
+            <p>툴 실행 결과를 <span class="tag">role=tool</span>로 history에 저장. <span class="tag">tool_call_id</span>로 어떤 호출에 대한 응답인지 매핑.</p>
+          </div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">05</span></footer>
+    </section>
+
+    <!-- 6: handle_request 코드 -->
+    <section class="slide" data-notes="피드백 루프의 본체. for step in range(max_steps). 종료 조건은 tool_calls가 비었을 때 = LLM이 더 부를 툴 없다고 판단했을 때.">
+      <div class="eyebrow">Code · 피드백 루프</div>
+      <div class="frame">
+        <h2 class="reveal">루프 하나가<br><span class="gradient-title">에이전트</span>다.</h2>
+        <div class="code reveal"><span class="k">def</span> <span class="fn">handle_request</span>(user_prompt, history, tools, max_steps=<span class="n">10</span>):
+    history.<span class="fn">append</span>({<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_prompt})
+
+    <span class="k">for</span> step <span class="k">in</span> <span class="fn">range</span>(max_steps):
+        message = <span class="fn">generate_response</span>(history, tools)
+
+        <span class="c"># 종료: 툴 호출 없으면 최종 답변</span>
+        <span class="k">if</span> <span class="k">not</span> message.tool_calls:
+            history.<span class="fn">append</span>({<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: message.content})
+            <span class="k">return</span> history
+
+        <span class="c"># assistant 메시지 (어떤 툴 부를지 기록)</span>
+        history.<span class="fn">append</span>({<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: message.content,
+                        <span class="s">"tool_calls"</span>: [tc.<span class="fn">model_dump</span>() <span class="k">for</span> tc <span class="k">in</span> message.tool_calls]})
+
+        <span class="c"># 툴 실행 + 결과 저장</span>
+        <span class="k">for</span> tc <span class="k">in</span> message.tool_calls:
+            params = json.<span class="fn">loads</span>(tc.function.arguments)
+            <span class="k">try</span>:
+                <span class="hl">result = TOOLS[tc.function.name](**params)</span>
+            <span class="k">except</span> Exception <span class="k">as</span> e:
+                result = <span class="s">f"툴 실행 실패: {e}"</span>
+            history.<span class="fn">append</span>({<span class="s">"role"</span>: <span class="s">"tool"</span>, <span class="s">"tool_call_id"</span>: tc.id,
+                            <span class="s">"content"</span>: json.<span class="fn">dumps</span>(result)})
+
+    <span class="k">return</span> history</div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">06</span></footer>
+    </section>
+
+    <!-- 7: Fallback 시나리오 -->
+    <section class="slide" data-notes="실패해도 멈추지 않음. 시스템 프롬프트에 'A 실패하면 B로 폴백'을 적어두면 LLM이 알아서. 진짜 에이전트적 행동.">
+      <div class="eyebrow">Fallback in action</div>
+      <div class="frame">
+        <h2 class="reveal">실패해도<br><span class="gradient-title">다음 방법</span>을 찾는다.</h2>
+        <div class="dialogue reveal">
+          <div class="bubble"><b>SYSTEM</b><span>평가기준표는 1) 위키 → 2) 엑셀 순으로 시도. 실패하면 다음 소스로.</span></div>
+          <div class="bubble"><b>USER</b><span>이력서 평가해줘 (기준은 위키에서 찾아)</span></div>
+          <div class="bubble ai"><b>LLM</b><span>💭 위키부터 시도하자<br>⚡ get_confluence_page_content("00000000")</span></div>
+          <div class="bubble tool"><b>TOOL</b><span>"툴 실행 실패: page not found"</span></div>
+          <div class="bubble ai"><b>LLM</b><span>💭 위키 실패. 엑셀로 폴백.<br>⚡ read_excel()</span></div>
+          <div class="bubble tool"><b>TOOL</b><span>{"content": "직무적합성 40% / 자격요건 30% / ..."}</span></div>
+          <div class="bubble ai"><b>LLM</b><span>👀 기준 확보. 평가 시작.</span></div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">07</span></footer>
+    </section>
+
+    <!-- 8: Wrap -->
+    <section class="slide" data-notes="이제 진짜 에이전트가 됐다. 그런데 복잡한 목표는 매 스텝 결정 비용이 큼. 다음 챕터에서 '전체 계획을 먼저 짜고 그대로 실행'.">
+      <div class="eyebrow">Chapter 8 · 마무리</div>
+      <div class="frame">
+        <h2 class="reveal">반복이 작동한다.<br>다음은 <span class="gradient-title">먼저 계획</span>.</h2>
+        <div class="callout reveal no-bang">피드백 루프는 매 스텝 결정. 복잡한 목표일수록 LLM 호출이 늘어납니다. Chapter 9에서는 '시작 전에 한 번 전체 계획을 짜고 그대로 실행'하는 Planning을 다룹니다.</div>
+        <p class="reveal" style="margin-top:32px;">
+          <a class="chapter-card" style="display:inline-block;max-width:380px;" href="./chapter-9.html">
+            <span class="num">CH 09 →</span>
+            <span class="ttl">Planning</span>
+            <span class="desc">매 스텝 결정 vs 처음 한 번에 전체 계획. 그 차이.</span>
+          </a>
+        </p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-9.html">Next →</a></span><span class="num">08</span></footer>
+    </section>
+
+  </main>
+
+  <div class="progress"><span></span></div>
+  <div class="hint">← → 또는 Space · N: 노트 · P: 인쇄</div>
+  <div class="notes" aria-live="polite"></div>
+  <script src="./shared.js"></script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 9 · Planning — GenAI Agent</title>
+  <link rel="stylesheet" href="./shared.css">
+</head>
+<body>
+  <canvas id="kinetic-bg" aria-hidden="true"></canvas>
+  <main class="deck" aria-live="polite">
+
+    <!-- 1: Title -->
+    <section class="slide active" data-notes="Planning은 '실행 전에 전체 청사진을 먼저 그리기'. 피드백 루프와 상호배제가 아니라 보완. Plan을 짜고, 각 step 안에서는 작은 피드백 루프를 돌릴 수도 있음.">
+      <div class="eyebrow">Chapter 09 · Planning</div>
+      <div class="frame split">
+        <div>
+          <h1 class="reveal gradient-title">실행 전에<br>전체 청사진을<br>먼저 그린다.</h1>
+          <p class="lead reveal">피드백 루프는 매 스텝 결정. Planning은 시작 전에 한 번 결정. 복잡한 목표일수록 후자가 안정적입니다 — '뭐부터 할지' 길을 잃지 않으니까.</p>
+        </div>
+        <div class="hero-mark reveal" data-mark="PLN" aria-hidden="true">
+          <div class="orbit"></div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-8.html">Prev</a></span><span class="num">01</span></footer>
+    </section>
+
+    <!-- 2: 비교 -->
+    <section class="slide" data-notes="피드백 루프와 Planning의 결정 시점 차이. 매 스텝 vs 시작 전 한 번. LLM 호출 횟수도 다름.">
+      <div class="eyebrow">피드백 루프 vs Planning</div>
+      <div class="frame">
+        <h2 class="reveal">결정 시점이<br><span class="gradient-title">다르다</span>.</h2>
+        <div class="matrix three-col reveal">
+          <div class="head">구분</div><div class="head">피드백 루프 (Ch 8)</div><div class="head">Planning (Ch 9)</div>
+          <div>방식</div><div>직전 결과 보고 다음 결정</div><div class="good">전체 계획 수립 후 순서대로 실행</div>
+          <div>판단 시점</div><div>매 스텝마다</div><div class="good">시작 전 한 번</div>
+          <div>LLM 호출</div><div>많음</div><div class="good">절약</div>
+          <div>장점</div><div class="good">실패 시 대안 즉시 탐색</div><div>계획 명시적, 추적 쉬움</div>
+          <div>단점</div><div>매번 결정 비용</div><div>중간 실패 시 재계획 필요</div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">02</span></footer>
+    </section>
+
+    <!-- 3: 2단계 구조 -->
+    <section class="slide" data-notes="Planning의 본질. 2단계 구조. 1단계는 LLM이 한번 호출돼서 계획을 JSON으로 뱉음. 2단계는 그 계획을 for문으로 도는데, 각 step 안에서는 피드백 루프(tool_calls)를 사용.">
+      <div class="eyebrow">2단계 구조</div>
+      <div class="frame">
+        <h2 class="reveal">먼저 <span class="gradient-title">계획</span>,<br>그 다음 <span class="gradient-title">실행</span>.</h2>
+        <div class="diagram reveal">
+          <div class="flow">
+            <div class="flow-row" style="justify-content:center;">
+              <div class="node user">목표 입력</div>
+            </div>
+            <div class="arrow down">↓</div>
+            <div class="flow-row" style="justify-content:center;">
+              <div class="node llm" style="min-width:340px;">1단계 · make_plan()<br><small>LLM이 전체 단계를 JSON으로</small></div>
+            </div>
+            <div class="arrow down">↓ ["단계1","단계2","단계3",...]</div>
+            <div class="flow-row" style="justify-content:center;">
+              <div class="node tool" style="min-width:340px;">2단계 · execute_plan()<br><small>각 단계를 순서대로, 안에서는 피드백 루프</small></div>
+            </div>
+            <div class="arrow down">↓</div>
+            <div class="flow-row" style="justify-content:center;">
+              <div class="node user">결과</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">03</span></footer>
+    </section>
+
+    <!-- 4: make_plan 코드 -->
+    <section class="slide" data-notes="계획 수립 함수. 시스템 프롬프트에 'JSON으로만 답하라'를 명시. plan은 step 리스트.">
+      <div class="eyebrow">Code · make_plan</div>
+      <div class="frame">
+        <h2 class="reveal">계획은<br><span class="gradient-title">JSON 한 덩어리</span>.</h2>
+        <div class="code reveal">planning_system_prompt = <span class="s">"""당신은 채용 업무 실행 계획을 수립합니다.
+
+규칙:
+1. 실행 전에 전체 계획을 먼저 완성.
+2. 평가기준표는 하나만 조회.
+3. 이력서 비교가 필요하면 모든 이력서를 먼저 조회 후 평가.
+
+출력 형식 (JSON만):
+{
+    "goal": "목표 요약",
+    "plan": [
+        {"step": 1, "tool": "툴이름", "desc": "이 단계에서 할 일"},
+        {"step": 2, "tool": "툴이름", "desc": "..."}
+    ]
+}"""</span>
+
+<span class="k">def</span> <span class="fn">make_plan</span>(goal):
+    messages = [{<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: planning_system_prompt},
+                {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: goal}]
+    message = <span class="fn">generate_response</span>(messages, tools)
+    <span class="k">return</span> <span class="hl">json.<span class="fn">loads</span>(message.content)</span></div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">04</span></footer>
+    </section>
+
+    <!-- 5: execute_plan 코드 -->
+    <section class="slide" data-notes="execute_plan. 각 step 안에 작은 피드백 루프(inner for 5). 그 안에서 tool_calls 호출되며 step 완료 판단.">
+      <div class="eyebrow">Code · execute_plan 골격</div>
+      <div class="frame">
+        <h2 class="reveal">각 step 안에<br><span class="gradient-title">작은 피드백 루프</span>.</h2>
+        <div class="code reveal"><span class="k">def</span> <span class="fn">execute_plan</span>(plan, goal):
+    history = [{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">f"목표: {goal}\n계획: {plan['plan']}"</span>}]
+
+    <span class="k">for</span> step_info <span class="k">in</span> plan[<span class="s">"plan"</span>]:
+        step_num = step_info[<span class="s">"step"</span>]
+        desc     = step_info[<span class="s">"desc"</span>]
+
+        <span class="k">for</span> inner <span class="k">in</span> <span class="fn">range</span>(<span class="n">5</span>):
+            messages = [{<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: execution_system_prompt}, *history,
+                        {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">f"Step {step_num}만 실행: {desc}"</span>}]
+            message = <span class="fn">generate_response</span>(messages, tools, <span class="s">"auto"</span>)
+
+            <span class="k">if</span> <span class="k">not</span> message.tool_calls:           <span class="c"># 이 step 완료</span>
+                history.<span class="fn">append</span>({<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: message.content})
+                <span class="k">break</span>
+
+            history.<span class="fn">append</span>({<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"tool_calls"</span>: [...]})
+            <span class="k">for</span> tc <span class="k">in</span> message.tool_calls:
+                result = <span class="fn">TOOLS</span>[tc.function.name](**json.<span class="fn">loads</span>(tc.function.arguments))
+                history.<span class="fn">append</span>({<span class="s">"role"</span>: <span class="s">"tool"</span>, <span class="s">"tool_call_id"</span>: tc.id, <span class="s">"content"</span>: ...})</div>
+        <p class="small reveal">외곽 for문 = 계획대로 step 순회. 내부 for문 = step 안에서 tool_calls 반복(작은 피드백 루프). step 종료 조건 = tool_calls 없음.</p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">05</span></footer>
+    </section>
+
+    <!-- 6: 실행 -->
+    <section class="slide" data-notes="사용법은 단순. 사용자가 목표 한 문장 → make_plan → execute_plan. 둘을 그냥 이어붙이면 End-to-End.">
+      <div class="eyebrow">사용법</div>
+      <div class="frame">
+        <h2 class="reveal">목표만 던진다.<br>계획부터 실행까지 <span class="gradient-title">자동</span>.</h2>
+        <div class="code reveal">goal = <span class="s">"""소프트웨어 엔지니어링 채용공고를 분석하고
+내용에 맞는 후보자를 RAG로 찾아서 이력서를 조회해줘.
+그리고 평가결과를 엑셀에 저장해줘."""</span>
+
+<span class="c"># 1. 계획</span>
+plan = <span class="fn">make_plan</span>(goal)
+<span class="c"># → {</span>
+<span class="c">#     "goal": "...",</span>
+<span class="c">#     "plan": [</span>
+<span class="c">#       {"step":1, "tool":"execute_sql", "desc":"채용공고 조회"},</span>
+<span class="c">#       {"step":2, "tool":"retrieve_from_rag", "desc":"후보자 검색"},</span>
+<span class="c">#       {"step":3, "tool":"execute_sql", "desc":"이력서 조회"},</span>
+<span class="c">#       {"step":4, "tool":"save_excel", "desc":"평가결과 저장"}</span>
+<span class="c">#     ]</span>
+<span class="c">#   }</span>
+
+<span class="c"># 2. 실행</span>
+history = <span class="fn">execute_plan</span>(plan, goal)</div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">06</span></footer>
+    </section>
+
+    <!-- 7: Wrap -->
+    <section class="slide" data-notes="이제 사람이 했던 End-to-End 업무 전체를 LLM이 대신 함. 그런데 시스템 프롬프트가 점점 비대해짐. 마지막 챕터에서 역할을 쪼개는 멀티 에이전트.">
+      <div class="eyebrow">Chapter 9 · 마무리</div>
+      <div class="frame">
+        <h2 class="reveal">한 LLM이<br>전부 짊어진다.<br><span class="gradient-title">그게 한계</span>다.</h2>
+        <div class="callout reveal no-bang">평가 규칙, 저장 규칙, 보고서 규칙, 엑셀 컬럼명 등 모든 게 한 시스템 프롬프트에 쌓입니다. 컨텍스트가 길어질수록 LLM이 헷갈리기 시작합니다. 마지막 챕터에서 역할별로 에이전트를 쪼갭니다.</div>
+        <p class="reveal" style="margin-top:32px;">
+          <a class="chapter-card" style="display:inline-block;max-width:380px;" href="./chapter-10.html">
+            <span class="num">CH 10 →</span>
+            <span class="ttl">멀티 에이전트</span>
+            <span class="desc">하나의 거대한 LLM이 아니라, 역할별 작은 에이전트들의 협업.</span>
+          </a>
+        </p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-10.html">Next →</a></span><span class="num">07</span></footer>
+    </section>
+
+  </main>
+
+  <div class="progress"><span></span></div>
+  <div class="hint">← → 또는 Space · N: 노트 · P: 인쇄</div>
+  <div class="notes" aria-live="polite"></div>
+  <script src="./shared.js"></script>
+</body>
+</html>

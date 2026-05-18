@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 6 · 고정 워크플로우 — GenAI Agent</title>
+  <link rel="stylesheet" href="./shared.css">
+</head>
+<body>
+  <canvas id="kinetic-bg" aria-hidden="true"></canvas>
+  <main class="deck" aria-live="polite">
+
+    <!-- 1: Title -->
+    <section class="slide active" data-notes="이 챕터는 '코드로 순서를 박은 워크플로우'의 한계를 일부러 체험하게 하는 챕터. 잘 동작하지만 시나리오가 조금만 바뀌면 다시 코드를 짜야 함.">
+      <div class="eyebrow">Chapter 06 · Workflow</div>
+      <div class="frame split">
+        <div>
+          <h1 class="reveal gradient-title">툴을<br>줄 세운다.<br>End-to-End.</h1>
+          <p class="lead reveal">툴 A → 툴 B → 툴 C → 결과. 코드로 순서를 박아둔 워크플로우. 한 시나리오는 완벽하게 돕니다. 그리고 시나리오가 바뀌면 다시 짜야 합니다.</p>
+        </div>
+        <div class="hero-mark reveal" data-mark="FLOW" aria-hidden="true">
+          <div class="orbit"></div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-5.html">Prev</a></span><span class="num">01</span></footer>
+    </section>
+
+    <!-- 2: 워크플로우란 -->
+    <section class="slide" data-notes="워크플로우는 '툴의 실행 순서'. LLM과 툴을 직렬로 엮어 사람의 업무 흐름을 코드로 재현.">
+      <div class="eyebrow">정의</div>
+      <div class="frame">
+        <h2 class="reveal">워크플로우 =<br><span class="gradient-title">툴의 순서</span>.</h2>
+        <div class="diagram reveal">
+          <div class="flow">
+            <div class="flow-row evenly">
+              <div class="node user">사용자<br><small>요청</small></div>
+              <div class="arrow">→</div>
+              <div class="node llm">LLM</div>
+              <div class="arrow">→</div>
+              <div class="node tool">툴 A</div>
+              <div class="arrow">→</div>
+              <div class="node llm">LLM</div>
+              <div class="arrow">→</div>
+              <div class="node tool">툴 B</div>
+              <div class="arrow">→</div>
+              <div class="node tool">툴 C</div>
+              <div class="arrow">→</div>
+              <div class="node user">결과</div>
+            </div>
+          </div>
+        </div>
+        <p class="lead reveal">사람이 하던 업무를 LLM과 툴의 직렬 호출로 재현. 이 챕터에선 우리가 어떤 LLM/툴을 어떤 순서로 부를지를 <span class="tag">def workflow():</span>로 직접 적습니다.</p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">02</span></footer>
+    </section>
+
+    <!-- 3: Workflow 1 다이어그램 -->
+    <section class="slide" data-notes="Workflow 1: 조건 검색 → 추천 → 전체 조회 → 요약. RAG는 청크만 주기 때문에 다시 DB로 가야 한다는 점이 포인트.">
+      <div class="eyebrow">Workflow 1 · RAG → DB</div>
+      <div class="frame">
+        <h2 class="reveal">청크만으로는<br><span class="gradient-title">부족</span>합니다.</h2>
+        <div class="diagram reveal">
+          <div class="flow">
+            <div class="flow-row evenly">
+              <div class="node user">"임베디드 경험자"</div>
+              <div class="arrow">→</div>
+              <div class="node tool">retrieve_from_rag<br><small>후보 ID 추출</small></div>
+              <div class="arrow">→</div>
+              <div class="node llm">LLM<br><small>1명 선정</small></div>
+              <div class="arrow">→</div>
+              <div class="node tool">execute_sql<br><small>전체 이력서 조회</small></div>
+              <div class="arrow">→</div>
+              <div class="node llm">LLM<br><small>5문장 요약</small></div>
+            </div>
+          </div>
+        </div>
+        <p class="lead reveal">RAG가 반환하는 건 청크 조각. 사람 단위로 보려면 <span class="tag">resume_id</span>로 다시 DB를 한 번 더 칩니다. 이렇게 툴 2개를 엮어야 비로소 '검색 + 조회'가 완성됩니다.</p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">03</span></footer>
+    </section>
+
+    <!-- 4: Workflow 1 코드 -->
+    <section class="slide" data-notes="def workflow_1(user_prompt) 코드의 핵심 골격. 단계 사이에 LLM이 출력하는 JSON을 파싱해서 다음 단계 입력으로 넘기는 패턴.">
+      <div class="eyebrow">Code · Workflow 1</div>
+      <div class="frame">
+        <h2 class="reveal">함수 하나에<br>4단계를 박는다.</h2>
+        <div class="code reveal"><span class="k">def</span> <span class="fn">workflow_1</span>(user_prompt):
+    <span class="c"># 1. RAG 검색</span>
+    rag_results = <span class="fn">retrieve_from_rag</span>(user_prompt)
+
+    <span class="c"># 2. LLM이 적합한 후보 1명 선정 (JSON 출력)</span>
+    selected = <span class="fn">generate_response</span>(
+        system_prompt=recommend_resume_system_prompt,
+        user_prompt=<span class="s">f"{user_prompt}\n[검색결과]{rag_results}"</span>,
+    )
+    resume_id = <span class="fn">int</span>(json.<span class="fn">loads</span>(selected)[<span class="s">"resume_ID"</span>])
+
+    <span class="c"># 3. DB에서 전체 이력서 조회</span>
+    resume = <span class="fn">execute_sql</span>(<span class="s">f"SELECT * FROM resume WHERE ID = {resume_id}"</span>)
+
+    <span class="c"># 4. LLM이 요약</span>
+    summary = <span class="fn">generate_response</span>(
+        system_prompt=resume_summary_system_prompt,
+        user_prompt=<span class="s">f"{user_prompt}\n[이력서]{resume[0][...]}"</span>,
+    )</div>
+        <p class="small reveal">단계 사이마다 LLM 응답을 다음 툴의 입력으로 변환. <span class="tag">json.loads()</span>로 LLM의 JSON 출력을 파이썬 객체로.</p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">04</span></footer>
+    </section>
+
+    <!-- 5: Workflow 2 다이어그램 -->
+    <section class="slide" data-notes="Workflow 2: 4개 툴 엮기. SQL → Confluence → Excel → Email. 사람의 채용 평가 업무 전체를 코드 하나로.">
+      <div class="eyebrow">Workflow 2 · 4개 툴</div>
+      <div class="frame">
+        <h2 class="reveal">평가부터<br>저장·발송까지<br><span class="gradient-title">한 번에</span>.</h2>
+        <div class="diagram reveal">
+          <div class="flow">
+            <div class="flow-row evenly">
+              <div class="node user">이력서 ID 입력</div>
+              <div class="arrow">→</div>
+              <div class="node llm">SQL 생성</div>
+              <div class="arrow">→</div>
+              <div class="node tool">execute_sql<br><small>이력서·공고</small></div>
+              <div class="arrow">→</div>
+              <div class="node tool">get_confluence<br><small>평가 기준표</small></div>
+              <div class="arrow">→</div>
+              <div class="node llm">LLM 평가</div>
+            </div>
+            <div class="flow-row evenly">
+              <div class="node llm">JSON 변환</div>
+              <div class="arrow">→</div>
+              <div class="node tool">save_excel</div>
+              <div class="arrow">→</div>
+              <div class="node llm">HTML 보고서</div>
+              <div class="arrow">→</div>
+              <div class="node tool">send_email</div>
+              <div class="arrow">→</div>
+              <div class="node user">📬 메일 도착</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">05</span></footer>
+    </section>
+
+    <!-- 6: Workflow 2 코드 -->
+    <section class="slide" data-notes="9단계 함수의 골격만. 각 단계가 LLM/툴 호출 한 번. 길어 보이지만 직선적인 흐름.">
+      <div class="eyebrow">Code · Workflow 2 골격</div>
+      <div class="frame">
+        <h2 class="reveal">9단계.<br>그러나 <span class="gradient-title">직선적</span>.</h2>
+        <div class="code reveal"><span class="k">def</span> <span class="fn">workflow_2</span>(user_prompt):
+    sql_query     = <span class="fn">generate_response</span>(sql_gen_prompt, user_prompt)      <span class="c"># 1. SQL 생성</span>
+    resume        = <span class="fn">execute_sql</span>(sql_query)                                <span class="c"># 2. 이력서</span>
+    jp            = <span class="fn">execute_sql</span>(<span class="s">"SELECT ... FROM job_posting"</span>)         <span class="c"># 3. 공고</span>
+    eval_criteria = <span class="fn">get_confluence_page_content</span>(CRITERIA_PAGE_ID)         <span class="c"># 4. 기준표</span>
+
+    eval_result   = <span class="fn">generate_response</span>(eval_prompt, <span class="s">f"{resume}{jp}{eval_criteria}"</span>)  <span class="c"># 5. 평가</span>
+    json_response = <span class="fn">generate_response</span>(json_prompt, eval_result)            <span class="c"># 6. JSON 변환</span>
+
+    <span class="fn">save_excel</span>(json_response)                                            <span class="c"># 7. 저장</span>
+    report        = <span class="fn">generate_response</span>(report_prompt, eval_result)          <span class="c"># 8. 보고서</span>
+    <span class="fn">send_email</span>(report)                                                   <span class="c"># 9. 발송</span></div>
+        <p class="small reveal">9개 호출이 한 줄씩. 각 단계의 입출력이 다음 단계 입력에 정확히 들어가도록 코드로 박혀 있습니다 — 이게 '고정' 워크플로우의 의미.</p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">06</span></footer>
+    </section>
+
+    <!-- 7: 한계 -->
+    <section class="slide" data-notes="이 챕터의 핵심 한계. 시나리오가 달라지면 함수를 새로 만들어야 함. End-to-End가 동작한다고 Agent라고 부르긴 어려움.">
+      <div class="eyebrow">한계</div>
+      <div class="frame">
+        <h2 class="reveal">잘 돈다.<br>대신 <span class="gradient-title">시나리오가 바뀌면</span><br>다시 짜야 한다.</h2>
+        <div class="matrix two-col reveal">
+          <div class="head">고정 워크플로우</div><div class="head">우리가 원하는 Agent</div>
+          <div>개발자가 코드로 순서 박음</div><div class="good">LLM이 요청에 따라 순서 결정</div>
+          <div>결과가 달라지면 코드 수정</div><div class="good">프롬프트만 바꾸면 됨</div>
+          <div>시나리오마다 다른 함수</div><div class="good">하나의 코드가 모든 요청</div>
+          <div class="bad">"End-to-End"지만 Agent 아님</div><div class="good">"Agent"의 출발선</div>
+        </div>
+        <p class="lead reveal">End-to-End로 작업이 가능해도 고정된 목표만 수행하면 Agent라고 부르기 어렵습니다. 다음 챕터에서 결정 권한 일부를 LLM에 넘깁니다.</p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">07</span></footer>
+    </section>
+
+    <!-- 8: Wrap -->
+    <section class="slide" data-notes="다음 챕터의 호기심을 자극. '같은 코드, 다른 요청으로도 자동으로 동작하게 만들 수 있다면?'.">
+      <div class="eyebrow">Chapter 6 · 마무리</div>
+      <div class="frame">
+        <h2 class="reveal">결정 권한을<br><span class="gradient-title">LLM에게</span>.</h2>
+        <div class="callout reveal no-bang">툴 순서를 사람이 박는 대신 LLM이 정하게 만들면? Chapter 7에서 처음으로 LLM에 '어떤 툴을 부를지'를 묻고, 그 답에서 툴 이름과 파라미터를 추출해 실행합니다.</div>
+        <p class="reveal" style="margin-top:32px;">
+          <a class="chapter-card" style="display:inline-block;max-width:380px;" href="./chapter-7.html">
+            <span class="num">CH 07 →</span>
+            <span class="ttl">Decision · 자율 툴 선택</span>
+            <span class="desc">시스템 프롬프트로 툴 목록 알려주기, JSON으로 답 받기.</span>
+          </a>
+        </p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-7.html">Next →</a></span><span class="num">08</span></footer>
+    </section>
+
+  </main>
+
+  <div class="progress"><span></span></div>
+  <div class="hint">← → 또는 Space · N: 노트 · P: 인쇄</div>
+  <div class="notes" aria-live="polite"></div>
+  <script src="./shared.js"></script>
+</body>
+</html>

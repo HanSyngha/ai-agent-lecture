@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 2 · 환경변수 .env — GenAI Agent</title>
+  <link rel="stylesheet" href="./shared.css">
+</head>
+<body>
+  <canvas id="kinetic-bg" aria-hidden="true"></canvas>
+  <main class="deck" aria-live="polite">
+
+    <!-- 1: Title -->
+    <section class="slide active" data-notes="Chapter 2의 목표: '왜 매 셀마다 API 키를 다시 입력하지 않는가'를 설명하면서 dotenv 패턴을 깔아둡니다. 이 패턴은 강의 끝까지 그대로 사용됩니다.">
+      <div class="eyebrow">Chapter 02 · 환경변수</div>
+      <div class="frame split">
+        <div>
+          <h1 class="reveal gradient-title">키·URL·이름,<br>한 번만<br>정리해두기.</h1>
+          <p class="lead reveal">실습마다 인증키와 모델명과 base URL을 반복 입력하면 코드가 더러워집니다. .env 한 파일에 모아두고, 모든 셀이 거기서 꺼내 씁니다.</p>
+        </div>
+        <div class="hero-mark reveal" data-mark=".env" aria-hidden="true">
+          <div class="orbit"></div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-1.html">Prev</a></span><span class="num">01</span></footer>
+    </section>
+
+    <!-- 2: 왜 -->
+    <section class="slide" data-notes="청중이 처음 LLM 호출을 배울 때 가장 흔히 하는 실수가 '셀마다 키를 다시 변수로 잡는 것'. 이 슬라이드로 그 안티패턴을 사전에 차단합니다.">
+      <div class="eyebrow">Anti-pattern → pattern</div>
+      <div class="frame">
+        <h2 class="reveal">매 셀마다 키 입력?<br><span class="gradient-title">한 번이면 충분</span>합니다.</h2>
+        <div class="cards two reveal">
+          <div class="card" style="border-color:rgba(255,107,53,0.4);">
+            <strong style="color:#ffb696;">❌ 매 셀마다</strong>
+            <div class="code bare" style="margin-top:14px;font-size:0.8em;"><span class="c"># Cell 1</span>
+api_key = <span class="s">"sk-..."</span>
+url     = <span class="s">"https://..."</span>
+
+<span class="c"># Cell 2 (같은 거 또)</span>
+api_key = <span class="s">"sk-..."</span>
+url     = <span class="s">"https://..."</span></div>
+          </div>
+          <div class="card">
+            <strong>✅ .env 한 번</strong>
+            <div class="code bare" style="margin-top:14px;font-size:0.8em;"><span class="c"># .env 파일 (한 번만)</span>
+api_key=sk-...
+api_base_url=https://...
+
+<span class="c"># 어느 셀에서든</span>
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
+load_dotenv()
+key = os.getenv(<span class="s">"api_key"</span>)</div>
+          </div>
+        </div>
+        <p class="small reveal">.env는 git에 올리지 않는 게 원칙. <span class="tag">.gitignore</span>에 <span class="tag">.env</span>를 추가해 두세요.</p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">02</span></footer>
+    </section>
+
+    <!-- 3: 필요한 값 -->
+    <section class="slide" data-notes="강의에서 쓰는 8개 환경변수 한눈에. 각각이 강의 어디서 쓰이는지 함께 언급.">
+      <div class="eyebrow">강의에서 쓰는 8개 키</div>
+      <div class="frame">
+        <h2 class="reveal">한 번 적어두고<br>10장 동안 재사용.</h2>
+        <div class="matrix three-col reveal">
+          <div class="head">변수</div><div class="head">의미</div><div class="head">언제 쓰이나</div>
+          <div><span class="tag">OPENAI_API_KEY</span></div><div>OpenAI 호환 더미 키</div><div>API 클라이언트 형식상</div>
+          <div><span class="tag">credential_key</span></div><div>실제 LLM 인증 헤더</div><div>매 호출의 x-ticket</div>
+          <div><span class="tag">send_system_name</span></div><div>호출하는 시스템명</div><div>API gateway가 본인 확인</div>
+          <div><span class="tag">model</span></div><div>사용할 LLM 모델명</div><div>예: gpt-oss-120b</div>
+          <div><span class="tag">api_base_url</span></div><div>LLM 엔드포인트</div><div>OpenAI client base_url</div>
+          <div><span class="tag">user_id</span></div><div>본인 SSO ID</div><div>호출 로깅 / Confluence</div>
+          <div><span class="tag">embedding_credential_key</span></div><div>임베딩 API 키</div><div>RAG 챕터에서 사용</div>
+          <div><span class="tag">user_pw</span></div><div>위키 비밀번호</div><div>Confluence 조회 툴</div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">03</span></footer>
+    </section>
+
+    <!-- 4: set_key 코드 -->
+    <section class="slide" data-notes="환경변수 파일 생성 코드. set_key는 .env 파일을 직접 작성합니다. dict를 돌면서 한 키씩 set.">
+      <div class="eyebrow">Code · .env 만들기</div>
+      <div class="frame">
+        <h2 class="reveal">dict 한 번 →<br><span class="gradient-title">.env 파일</span> 한 번.</h2>
+        <div class="code reveal"><span class="k">import</span> os
+<span class="k">from</span> dotenv <span class="k">import</span> set_key
+
+env_vars = {
+    <span class="s">"OPENAI_API_KEY"</span>: OPENAI_API_KEY,
+    <span class="s">"credential_key"</span>: credential_key,
+    <span class="s">"send_system_name"</span>: send_system_name,
+    <span class="s">"model"</span>: model,
+    <span class="s">"api_base_url"</span>: api_base_url,
+    <span class="s">"user_id"</span>: user_id,
+    <span class="s">"embedding_credential_key"</span>: embedding_credential_key,
+    <span class="s">"user_pw"</span>: user_pw,
+}
+
+<span class="k">for</span> key, value <span class="k">in</span> env_vars.items():
+    <span class="hl">set_key(<span class="s">".env"</span>, key, value)</span></div>
+        <p class="small reveal"><span class="tag">set_key</span>는 <span class="tag">.env</span>가 없으면 만들고, 있으면 해당 키만 갱신합니다. 비밀번호처럼 한 번만 받아두면 끝.</p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">04</span></footer>
+    </section>
+
+    <!-- 5: load_dotenv -->
+    <section class="slide" data-notes="이 두 줄이 강의 모든 노트북의 첫머리에 등장. override=True는 셀 재실행 시 값을 다시 읽어오게 함.">
+      <div class="eyebrow">Code · 매 노트북의 첫 두 줄</div>
+      <div class="frame split">
+        <div>
+          <h2 class="reveal">한 번 적고,<br>매 노트북에서<br><span class="gradient-title">두 줄</span>로 불러온다.</h2>
+          <p class="lead reveal"><span class="tag">load_dotenv(override=True)</span>로 환경변수를 프로세스에 주입하고, <span class="tag">os.getenv()</span>로 어디서든 꺼냅니다.</p>
+        </div>
+        <div>
+          <div class="code reveal"><span class="k">import</span> os
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
+
+<span class="hl">load_dotenv(override=<span class="n">True</span>)</span>
+
+<span class="c"># 어디서든 꺼내 쓰기</span>
+key  = os.getenv(<span class="s">"credential_key"</span>)
+url  = os.getenv(<span class="s">"api_base_url"</span>)
+name = os.getenv(<span class="s">"model"</span>)</div>
+        </div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">05</span></footer>
+    </section>
+
+    <!-- 6: 확인 -->
+    <section class="slide" data-notes="check_api 헬퍼들은 실제로 LLM/Embedding/Confluence에 한 번씩 호출해서 OK가 떨어지는지 확인합니다. 강의 운영상 가장 자주 디버깅하는 지점.">
+      <div class="eyebrow">Sanity check</div>
+      <div class="frame">
+        <h2 class="reveal">3개 API가<br>모두 살아 있는지<br>한 번에 확인.</h2>
+        <div class="code reveal"><span class="k">from</span> utils.helper <span class="k">import</span> check_llm_api, check_embedding_api, check_confluence_api
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
+
+load_dotenv(override=<span class="n">True</span>)
+
+<span class="hl">check_llm_api()</span>          <span class="c"># 인증키 + base_url 검증</span>
+<span class="hl">check_embedding_api()</span>    <span class="c"># 임베딩 키 검증</span>
+<span class="hl">check_confluence_api()</span>   <span class="c"># 위키 비번 검증</span></div>
+        <div class="callout reveal no-bang" style="margin-top:18px;">하나라도 실패하면 다음 챕터로 못 갑니다. .env가 정확한지부터 의심하세요 — 8할은 키 오타.</div>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a></span><span class="num">06</span></footer>
+    </section>
+
+    <!-- 7: Wrap -->
+    <section class="slide" data-notes="다음 챕터로의 다리. 이제 LLM에 'Hi' 한 번 보낼 수 있는 상태입니다.">
+      <div class="eyebrow">Chapter 2 · 마무리</div>
+      <div class="frame">
+        <h2 class="reveal">이제 진짜<br><span class="gradient-title">LLM</span>을<br>호출할 수 있다.</h2>
+        <div class="callout reveal no-bang">.env 만들기 → load_dotenv → check_api 통과. 다음 챕터부터는 매 노트북이 같은 두 줄로 시작합니다. 이 두 줄은 더 이상 설명하지 않을 거예요.</div>
+        <p class="reveal" style="margin-top:32px;">
+          <a class="chapter-card" style="display:inline-block;max-width:380px;" href="./chapter-3.html">
+            <span class="num">CH 03 →</span>
+            <span class="ttl">시스템 프롬프트 & 페르소나</span>
+            <span class="desc">generate_response()의 뼈대, 그리고 LLM에 역할을 부여하는 방법.</span>
+          </a>
+        </p>
+      </div>
+      <footer><span><a href="./index.html">← Hub</a> · <a href="./chapter-3.html">Next →</a></span><span class="num">07</span></footer>
+    </section>
+
+  </main>
+
+  <div class="progress"><span></span></div>
+  <div class="hint">← → 또는 Space · N: 노트 · P: 인쇄</div>
+  <div class="notes" aria-live="polite"></div>
+  <script src="./shared.js"></script>
+</body>
+</html>
