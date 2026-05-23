@@ -6,7 +6,7 @@
   <title>Ch.08 · 피드백 루프, Tool Calling — GenAI Agent</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
-  <link rel="stylesheet" href="./styles.css?v=7">
+  <link rel="stylesheet" href="./styles.css?v=8">
 </head>
 <body data-chapter="8">
 
@@ -49,31 +49,34 @@
           </h2>
 
           <div class="diagram">
-            <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
-              <!-- circular nodes -->
+            <svg viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg">
               <g class="fade-in">
-                <rect class="node-bg user" x="180" y="20"  rx="10" width="140" height="50"/>
-                <rect class="node-bg llm"  x="180" y="110" rx="10" width="140" height="50"/>
-                <rect class="node-bg tool" x="180" y="200" rx="10" width="140" height="50"/>
+                <rect class="node-bg user" x="60"  y="80" rx="10" width="160" height="60"/>
+                <rect class="node-bg llm"  x="370" y="80" rx="10" width="160" height="60"/>
+                <rect class="node-bg tool" x="680" y="80" rx="10" width="160" height="60"/>
               </g>
               <g class="fade-in">
-                <text x="250" y="50"  text-anchor="middle">사용자 요청</text>
-                <text x="250" y="140" text-anchor="middle">LLM</text>
-                <text x="250" y="158" text-anchor="middle" class="label">툴 선택</text>
-                <text x="250" y="230" text-anchor="middle">툴 실행</text>
+                <text x="140" y="115" text-anchor="middle">사용자 요청</text>
+                <text x="450" y="110" text-anchor="middle">LLM</text>
+                <text x="450" y="130" text-anchor="middle" class="label">툴 선택</text>
+                <text x="760" y="115" text-anchor="middle">툴 실행</text>
               </g>
-              <!-- arrows -->
+              <!-- forward arrows -->
               <g class="draw">
-                <path class="edge" d="M250 70 L250 110" stroke-width="2"/>
-                <path class="edge" d="M250 160 L250 200" stroke-width="2"/>
-                <path class="edge accent" d="M180 225 C100 225, 100 130, 180 130" stroke-width="2"/>
+                <path class="edge" d="M220 110 L370 110" stroke-width="2"/>
+                <path class="edge" d="M530 110 L680 110" stroke-width="2"/>
               </g>
               <g class="fade-in">
-                <polygon class="arrow-head" points="245,108 255,108 250,118"/>
-                <polygon class="arrow-head" points="245,198 255,198 250,208"/>
-                <polygon class="arrow-head accent" points="178,125 188,130 178,135"/>
-                <text x="80" y="170" class="label" style="fill: var(--accent);">결과 보고</text>
-                <text x="80" y="186" class="label" style="fill: var(--accent);">다시 결정</text>
+                <polygon class="arrow-head" points="368,105 368,115 378,110"/>
+                <polygon class="arrow-head" points="678,105 678,115 688,110"/>
+              </g>
+              <!-- feedback loop arrow under -->
+              <g class="draw">
+                <path class="edge accent" d="M760 140 C760 200, 450 200, 450 140" stroke-width="2"/>
+              </g>
+              <g class="fade-in">
+                <polygon class="arrow-head accent" points="455,140 445,140 450,130"/>
+                <text x="605" y="195" text-anchor="middle" class="label" style="fill: var(--accent);">결과 보고 → 다시 결정</text>
               </g>
             </svg>
           </div>
